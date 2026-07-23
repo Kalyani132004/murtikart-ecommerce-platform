@@ -1,0 +1,413 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Edit Wholesale Order #{{ order.id }} - MurtiKart Admin{% endblock %}
+{% block page_title %}Edit Wholesale Order #{{ order.id }}{% endblock %}
+{% block nav_wholesalers %}active{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .model-card {
+        border: 2px solid #eee;
+        border-radius: 12px;
+        transition: all 0.2s;
+        background: #fff;
+        position: relative;
+    }
+    .model-card:hover { border-color: #600000; box-shadow: 0 5px 20px rgba(96,0,0,0.1); }
+    .model-card.selected { border-color: #600000; background: #fff8f8; }
+    .model-card.selected .select-indicator { display: flex !important; }
+    .select-indicator {
+        display: none;
+        position: absolute;
+        top: 8px; right: 8px;
+        width: 28px; height: 28px;
+        background: #600000;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: #D4AF37;
+        font-size: 0.8rem;
+    }
+    .qty-control { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .qty-control button {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        border: 1px solid #600000;
+        background: transparent;
+        color: #600000;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .qty-control input {
+        width: 50px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 2px;
+        font-weight: bold;
+    }
+    .order-summary {
+        position: sticky;
+        top: 80px;
+        background: #fff;
+        border: 2px solid #600000;
+        border-radius: 16px;
+        padding: 20px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed #eee;
+        font-size: 0.85rem;
+    }
+    .summary-header {
+        background: #600000;
+        color: #D4AF37;
+        border-radius: 10px;
+        padding: 10px 15px;
+        font-weight: bold;
+        font-family: 'Playfair Display', serif;
+        margin-bottom: 15px;
+    }
+    .search-box { border-radius: 30px; border: 2px solid #eee; padding: 10px 20px; }
+    .search-box:focus { border-color: #600000; outline: none; box-shadow: none; }
+    .wholesaler-info-card {
+        background: linear-gradient(135deg, #600000 0%, #8b0000 100%);
+        color: #fff;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+    .wholesaler-info-card .label { font-size: 0.72rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; }
+    .wholesaler-info-card .value { font-size: 0.9rem; font-weight: 600; }
+    .status-select {
+        border: 2px solid #600000;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-weight: 600;
+        color: #600000;
+        background: #fff;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div>
+    <!-- Wholesaler Info Banner -->
+    <div class="wholesaler-info-card d-flex flex-wrap gap-4 align-items-center mb-4">
+        <div>
+            <div class="label">Wholesaler</div>
+            <div class="value"><i class="fa-solid fa-shop me-1" style="color:#D4AF37;"></i>
+                {{ order.user.full_name|default:order.user.username }}
+            </div>
+        </div>
+        <div>
+            <div class="label">Order #</div>
+            <div class="value">{{ order.id }}</div>
+        </div>
+        <div>
+            <div class="label">Submitted On</div>
+            <div class="value">{{ order.date|date:"d M Y, h:i A" }}</div>
+        </div>
+        <div>
+            <div class="label">Current Status</div>
+            <div class="value">
+                <span class="badge
+                    {% if order.status == 'pending' %}bg-warning-subtle text-warning border border-warning
+                    {% elif order.status == 'confirmed' %}bg-success-subtle text-success border border-success
+                    {% elif order.status == 'delivered' %}bg-info-subtle text-info border border-info
+                    {% else %}bg-danger-subtle text-danger border border-danger{% endif %}
+                    rounded-pill px-3 py-2">
+                    {{ order.status|title }}
+                </span>
+            </div>
+        </div>
+        <div class="ms-auto">
+            <a href="{% url 'admin_panel:wholesalers' %}" class="btn btn-sm btn-outline-light rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-1"></i>Back to Orders
+            </a>
+        </div>
+    </div>
+
+    <!-- Status + Save Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+        <div>
+            <h5 class="fw-bold mb-1" style="font-family:'Playfair Display',serif; color:#600000;">
+                <i class="fa-solid fa-pen-to-square me-2"></i>Edit Order Items & Status
+            </h5>
+            <p class="text-muted small mb-0">Modify items, quantities, notes and order status, then save.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <label class="fw-bold small text-muted mb-0">Change Status:</label>
+            <select id="orderStatus" class="status-select">
+                <option value="pending"   {% if order.status == 'pending' %}selected{% endif %}>⏳ Pending</option>
+                <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>✅ Confirmed</option>
+                <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>🚚 Delivered</option>
+                <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>❌ Cancelled</option>
+            </select>
+            <button id="saveChangesBtn" class="btn btn-success rounded-pill px-4 fw-bold" disabled>
+                <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Model Selection Grid -->
+        <div class="col-lg-8">
+            <div class="mb-3">
+                <input type="text" id="searchModels" class="form-control search-box"
+                    placeholder="&#128269; Search models by name or number...">
+            </div>
+            <div class="row g-3" id="modelGrid"></div>
+            <div id="noModelsMsg" class="text-center py-5" style="display:none;">
+                <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No models found.</p>
+            </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <div class="summary-header text-center">
+                    <i class="fa-solid fa-receipt me-2"></i>Order Summary
+                </div>
+
+                <!-- Note to wholesaler -->
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-1">Wholesaler Note / Admin Remarks</label>
+                    <textarea id="orderNote" class="form-control form-control-sm" rows="2"
+                        placeholder="Add remarks or notes...">{{ order.delivery_address }}</textarea>
+                </div>
+
+                <div id="summaryItems">
+                    <p class="text-muted text-center small py-3">
+                        <i class="fa-solid fa-hand-point-left me-1"></i>Select models from the left
+                    </p>
+                </div>
+
+                <hr>
+                <div class="d-flex justify-content-between fw-bold mt-2">
+                    <span>Total Amount :</span>
+                    <span class="text-danger">₹ <span id="totalAmount">0</span></span>
+                </div>
+                <div class="d-flex justify-content-between text-muted small mt-1 mb-3">
+                    <span>Total Models :</span>
+                    <span id="totalSelected">0</span>
+                </div>
+
+                <button id="saveChangesBtnBottom" class="btn w-100 rounded-pill fw-bold"
+                    style="background:#600000; color:#D4AF37; border:none;" disabled>
+                    <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                </button>
+                <button class="btn btn-outline-secondary w-100 rounded-pill mt-2 btn-sm" onclick="clearAll()">
+                    <i class="fa-solid fa-trash me-1"></i>Clear All Items
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="wsProductsJson" type="application/json">{{ products_json|safe }}</script>
+<script id="existingItemsJson" type="application/json">{{ existing_items_json|safe }}</script>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+    const ALL_PRODUCTS = JSON.parse(document.getElementById('wsProductsJson').textContent);
+    const EXISTING = JSON.parse(document.getElementById('existingItemsJson').textContent);
+
+    // Pre-populate from existing order items
+    let selectedItems = {};
+    for (const [modelNo, qty] of Object.entries(EXISTING)) {
+        const prod = ALL_PRODUCTS.find(p => p.model_number === modelNo);
+        if (prod) {
+            selectedItems[modelNo] = { name: prod.name, price: prod.price, qty: qty };
+        }
+    }
+
+    function renderModels(filter = '') {
+        const grid = document.getElementById('modelGrid');
+        const noMsg = document.getElementById('noModelsMsg');
+        grid.innerHTML = '';
+
+        const filtered = ALL_PRODUCTS.filter(p =>
+            !filter ||
+            p.name.toLowerCase().includes(filter.toLowerCase()) ||
+            p.model_number.toLowerCase().includes(filter.toLowerCase())
+        );
+
+        if (filtered.length === 0) { noMsg.style.display = 'block'; return; }
+        noMsg.style.display = 'none';
+
+        filtered.forEach(p => {
+            const isSelected = !!selectedItems[p.model_number];
+            const qty = isSelected ? selectedItems[p.model_number].qty : 1;
+
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-sm-6';
+            col.innerHTML = `
+                <div class="model-card p-3 ${isSelected ? 'selected' : ''}" id="card-${p.model_number}">
+                    <div class="select-indicator"><i class="fa-solid fa-check"></i></div>
+                    <div class="d-flex gap-3 align-items-center mb-2">
+                        <img src="${p.image}" alt="${p.name}"
+                            style="width:55px;height:55px;object-fit:contain;border-radius:8px;background:#f5f5f5;"
+                            onerror="this.src='/static/assets/images/dagdusheth_gold.png'">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold small" style="font-family:'Playfair Display',serif;line-height:1.2;">${p.name}</div>
+                            <div class="text-muted" style="font-size:0.7rem;">🔢 ${p.model_number}</div>
+                            <div class="fw-bold text-danger">₹${p.price}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge ${p.stock > 5 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'} rounded-pill px-2">
+                            Stock: ${p.stock}
+                        </span>
+                        <div class="qty-control">
+                            <button type="button" onclick="changeQty('${p.model_number}', -1, ${p.price}, '${p.name.replace(/'/g, "\\'")}')">−</button>
+                            <input type="number" id="qty-${p.model_number}" value="${qty}" min="1"
+                                onchange="setQty('${p.model_number}', this.value, ${p.price}, '${p.name.replace(/'/g, "\\'")}')">
+                            <button type="button" onclick="changeQty('${p.model_number}', 1, ${p.price}, '${p.name.replace(/'/g, "\\'")}')">+</button>
+                        </div>
+                        <button class="btn btn-sm rounded-pill px-3 fw-bold ${isSelected ? 'btn-danger' : 'btn-outline-danger'}"
+                            style="${isSelected ? 'background:#600000;border-color:#600000;' : 'color:#600000;border-color:#600000;'}"
+                            onclick="toggleSelect('${p.model_number}', ${p.price}, '${p.name.replace(/'/g, "\\'")}')">
+                            ${isSelected ? 'Remove' : 'Add'}
+                        </button>
+                    </div>
+                </div>`;
+            grid.appendChild(col);
+        });
+    }
+
+    function toggleSelect(modelNo, price, name) {
+        if (selectedItems[modelNo]) {
+            delete selectedItems[modelNo];
+        } else {
+            const qtyEl = document.getElementById(`qty-${modelNo}`);
+            const qty = qtyEl ? parseInt(qtyEl.value) || 1 : 1;
+            selectedItems[modelNo] = { name, price, qty };
+        }
+        renderModels(document.getElementById('searchModels').value);
+        updateSummary();
+    }
+
+    function changeQty(modelNo, delta, price, name) {
+        const qtyEl = document.getElementById(`qty-${modelNo}`);
+        let qty = parseInt(qtyEl.value || 1) + delta;
+        if (qty < 1) qty = 1;
+        qtyEl.value = qty;
+        if (selectedItems[modelNo]) { selectedItems[modelNo].qty = qty; updateSummary(); }
+    }
+
+    function setQty(modelNo, value, price, name) {
+        let qty = parseInt(value) || 1;
+        if (qty < 1) qty = 1;
+        if (selectedItems[modelNo]) { selectedItems[modelNo].qty = qty; updateSummary(); }
+    }
+
+    function updateSummary() {
+        const summaryEl = document.getElementById('summaryItems');
+        const keys = Object.keys(selectedItems);
+        if (keys.length === 0) {
+            summaryEl.innerHTML = `<p class="text-muted text-center small py-3"><i class="fa-solid fa-hand-point-left me-1"></i>Select models from the left</p>`;
+            document.getElementById('totalAmount').innerText = '0';
+            document.getElementById('totalSelected').innerText = '0';
+            document.getElementById('saveChangesBtn').disabled = true;
+            document.getElementById('saveChangesBtnBottom').disabled = true;
+            return;
+        }
+
+        let total = 0, html = '';
+        keys.forEach(modelNo => {
+            const item = selectedItems[modelNo];
+            const lineTotal = item.price * item.qty;
+            total += lineTotal;
+            html += `<div class="summary-item">
+                <div>
+                    <div class="fw-bold" style="font-size:0.8rem;">${item.name}</div>
+                    <div class="text-muted" style="font-size:0.7rem;">₹${item.price} × ${item.qty}</div>
+                </div>
+                <div class="fw-bold text-danger">₹${lineTotal.toLocaleString('en-IN')}</div>
+            </div>`;
+        });
+
+        summaryEl.innerHTML = html;
+        document.getElementById('totalAmount').innerText = total.toLocaleString('en-IN');
+        document.getElementById('totalSelected').innerText = keys.length + ' model(s)';
+        document.getElementById('saveChangesBtn').disabled = false;
+        document.getElementById('saveChangesBtnBottom').disabled = false;
+    }
+
+    function clearAll() {
+        selectedItems = {};
+        renderModels(document.getElementById('searchModels').value);
+        updateSummary();
+    }
+
+    function saveChanges() {
+        const keys = Object.keys(selectedItems);
+        if (keys.length === 0) { alert("Please select at least one model."); return; }
+
+        const items = keys.map(modelNo => ({
+            model_number: modelNo,
+            qty: selectedItems[modelNo].qty
+        }));
+        const total = Object.values(selectedItems).reduce((acc, i) => acc + (i.price * i.qty), 0);
+        const status = document.getElementById('orderStatus').value;
+
+        const btn = document.getElementById('saveChangesBtnBottom');
+        const btnTop = document.getElementById('saveChangesBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving...';
+        btnTop.disabled = true; btnTop.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving...';
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({
+                items: items,
+                total_amount: total,
+                note: document.getElementById('orderNote').value,
+                status: status
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                alert('✅ Order #' + res.order_id + ' updated successfully!');
+                window.location.href = "{% url 'admin_panel:wholesalers' %}";
+            } else {
+                alert("Error: " + res.message);
+            }
+        })
+        .catch(err => alert("Network Error: " + err))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Save Changes';
+            btnTop.disabled = false;
+            btnTop.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Save Changes';
+        });
+    }
+
+    document.getElementById('searchModels').addEventListener('input', e => renderModels(e.target.value));
+    document.getElementById('saveChangesBtn').addEventListener('click', saveChanges);
+    document.getElementById('saveChangesBtnBottom').addEventListener('click', saveChanges);
+
+    // Enable save when status changes
+    document.getElementById('orderStatus').addEventListener('change', () => {
+        document.getElementById('saveChangesBtn').disabled = false;
+        document.getElementById('saveChangesBtnBottom').disabled = false;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderModels();
+        updateSummary();
+    });
+</script>
+{% endblock %}

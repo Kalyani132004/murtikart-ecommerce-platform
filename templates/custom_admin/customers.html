@@ -1,0 +1,63 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Customers - MurtiKart{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <div class="table-container shadow-sm bg-white rounded">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th data-i18n="th_id">ID</th>
+                        <th data-i18n="th_role">Role</th>
+                        <th data-i18n="th_name">Name</th>
+                        <th data-i18n="th_mobile">Mobile</th>
+                        <th data-i18n="th_address">Address</th>
+                        <th data-i18n="th_bookings">Status</th>
+                        <th data-i18n="th_action">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="customerTableBody">
+                    {% for customer in customers %}
+                    <tr>
+                        <td>#{{ customer.id }}</td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                <i class="fa-solid fa-user me-1"></i> Customer
+                            </span>
+                        </td>
+                        <td class="fw-bold">{{ customer.full_name }}</td>
+                        <td>{{ customer.mobile|default:"-" }}</td>
+                        <td>
+                            <small class="text-muted">{{ customer.address|truncatechars:30|default:"No address" }}</small>
+                        </td>
+                        <td>
+                            {% if customer.is_active %}
+                                <span class="text-success small"><i class="fa-solid fa-circle-check"></i> Active</span>
+                            {% else %}
+                                <span class="text-danger small"><i class="fa-solid fa-circle-xmark"></i> Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No customers registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+{% endblock %}

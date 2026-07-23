@@ -1,0 +1,156 @@
+{% extends 'customer/base_customer.html' %}
+{% load static %}
+
+{% block title %}Dashboard - MurtiKart{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <div class="mb-4">
+        <h2 class="festive-font mb-1"><span data-i18n="welcome_back">Welcome back</span>, {{ user.first_name|default:user.username }}!</h2>
+        <p class="text-muted" data-i18n="manage_bookings">Manage your Ganpati bookings and explore new models.</p>
+        
+        {% if messages %}
+        <div class="mt-3">
+            {% for msg in messages %}
+                <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm animate-fade" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-primary border-4 rounded-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary-subtle text-primary rounded-3 p-2 d-inline-block me-3">
+                        <i class="fa-solid fa-calendar-check fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Total Bookings</small>
+                        <h3 class="fw-bold mb-0 mt-1">{{ total_bookings_count|default:"0" }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm animate-fade" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-success border-4 rounded-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success-subtle text-success rounded-3 p-2 d-inline-block me-3">
+                        <i class="fa-solid fa-om fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Available Models</small>
+                        <h3 class="fw-bold mb-0 mt-1">{{ available_models_count|default:"0" }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm animate-fade" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-danger border-4 rounded-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-danger text-white rounded-3 p-2 d-inline-block me-3 shadow-sm">
+                        <i class="fa-solid fa-indian-rupee-sign fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;">Pending Payments</small>
+                        <h3 class="fw-bold mb-0 mt-1 text-danger">₹{{ total_pending_balance|default:"0" }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="table-container animate-fade shadow-sm p-4 bg-white rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0" data-i18n="my_recent_bookings">My Recent Bookings</h5>
+            <a href="{% url 'customer:bookings' %}" class="btn btn-sm btn-outline-primary" data-i18n="btn_view_all">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th data-i18n="th_booking_id">Booking ID</th>
+                        <th data-i18n="th_model_name">Model Name</th>
+                        <!-- <th data-i18n="th_quantity">Quantity</th> -->
+                        <th data-i18n="th_total_amount">Total Amount</th>
+                        <th data-i18n="th_status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+    {% for order in recent_bookings %}
+    <tr>
+        <td class="fw-bold">#ORD-{{ order.id }}</td>
+        
+        <td>
+            {% for item in order.items.all %}
+                {{ item.product.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                <span class="text-muted">No items</span>
+            {% endfor %}
+        </td>
+        <!-- order qty  -->
+        <!-- <td>{{ order.total_qty|default:0 }}</td> -->
+        
+        <td class="fw-bold text-dark">₹{{ order.total_amount }}</td>
+        
+        <td>
+            {% if order.status == 'pending' %}
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                    <i class="fa-solid fa-clock me-1"></i> Pending
+                </span>
+            {% elif order.status == 'confirmed' %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                    <i class="fa-solid fa-circle-check me-1"></i> Confirmed
+                </span>
+            {% elif order.status == 'delivered' %}
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">
+                    <i class="fa-solid fa-truck me-1"></i> Delivered
+                </span>
+            {% elif order.status == 'cancelled' %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
+                    <i class="fa-solid fa-circle-xmark me-1"></i> Cancelled
+                </span>
+            {% else %}
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">
+                    {{ order.get_status_display }}
+                </span>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5" class="text-center py-5">
+            <img src="{% static 'images/empty-cart.png' %}" alt="No Orders" style="width: 50px;" class="mb-2 opacity-50">
+            <p class="text-muted mb-0">You haven't placed any orders yet.</p>
+            <a href="{% url 'customer:models' %}" class="btn btn-sm btn-primary mt-2">Browse Models</a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-5 p-4 bg-primary text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center overflow-hidden position-relative">
+        <div class="position-relative z-index-1">
+            <h3 data-i18n="ready_for_ganesh">Ready for Ganesh Chaturthi?</h3>
+            <p class="mb-0 opacity-75" data-i18n="browse_premium">Browse our premium decorated models and book before stock runs out!</p>
+            <a href="{% url 'customer:models' %}" class="btn btn-warning mt-3 fw-bold" data-i18n="explore_models">Explore Models</a>
+        </div>
+        <i class="fa-solid fa-om position-absolute end-0 bottom-0 opacity-25" style="font-size: 10rem; transform: translate(20%, 20%);"></i>
+    </div>
+</div>
+{% endblock %}

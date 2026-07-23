@@ -1,0 +1,154 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Dashboard - MurtiKart{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <h2 class="festive-font mb-4" data-i18n="dashboard_overview">Dashboard Overview</h2>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-4 mb-5">
+    
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-primary border-4 rounded-bottom">
+                <div class="icon-box bg-primary-subtle text-primary rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-calendar-check fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;" data-i18n="stat_total_bookings">Total Bookings</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ total_bookings }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-success border-4 rounded-bottom">
+                <div class="icon-box bg-success-subtle text-success rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-users fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;" data-i18n="stat_total_customers">Total Customers</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ customer_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-info border-4 rounded-bottom">
+                <div class="icon-box bg-info-subtle text-info rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-shop fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;" data-i18n="stat_wholesalers">Wholesalers</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ wholesaler_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-warning border-4 rounded-bottom">
+                <div class="icon-box bg-warning-subtle text-warning rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-om fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;" data-i18n="stat_available_models">Available Models</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ total_models }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-danger border-4 rounded-bottom">
+                <div class="icon-box bg-danger text-white rounded-3 p-2 d-inline-block mb-3 shadow-sm">
+                    <i class="fa-solid fa-indian-rupee-sign fs-4"></i>
+                </div>
+                <br>
+                <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;" data-i18n="stat_pending_payments">Pending Payments</small>
+                <h3 class="fw-bold mb-0 mt-1 text-danger">₹{{ pending_balance|floatformat:0 }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <div class="table-container animate-fade">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0" data-i18n="recent_bookings">Recent Bookings</h5>
+            <a href="{% url 'admin_panel:bookings' %}" class="btn btn-sm btn-outline-primary" data-i18n="btn_view_all">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th data-i18n="th_booking_id">Booking ID</th>
+                        <th data-i18n="th_type">Type</th>
+                        <th data-i18n="th_customer_name">Customer Name</th>
+                        <th data-i18n="th_model_name">Model Name</th>
+                        <th data-i18n="th_quantity">Quantity</th>
+                        <th data-i18n="th_total_amount">Total Amount</th>
+                        <th data-i18n="th_status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in all_bookings %}
+                    <tr>
+                        <td>#BK-{{ booking.id }}</td>
+                        <td>
+                            {% if booking.user.role == 'wholesaler' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill" style="color: #856404 !important;">Wholesaler</span>
+                            {% else %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Customer</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ booking.user.full_name|default:booking.user.username }}</td>
+                        <td>
+                            {% for item in booking.items.all %}
+                                <span class="d-block small">{{ item.product.name }}{% if not forloop.last %}, {% endif %}</span>
+                            {% empty %}
+                                <span class="text-muted">—</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            
+                            
+                                    {% for item in booking.items.all %}
+                                         {{ item.quantity }}
+                                        
+                                    {% empty %}
+                                        <span class="text-muted">—</span>
+                                    {% endfor %}
+                                
+                        
+                        </td>
+                        <!-- <td>₹{{ booking.total_amount|floatformat:0 }} </td> -->
+                        <td>{{ booking.total_amount|subtract:booking.paid_amount }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if booking.status == 'pending' %}badge-pending
+                                {% elif booking.status == 'confirmed' %}badge-confirmed
+                                {% elif booking.status == 'delivered' %}badge-delivered
+                                {% else %}bg-danger{% endif %} 
+                                rounded-pill px-3">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No bookings found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

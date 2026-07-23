@@ -1,0 +1,434 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+
+{% block title %}Billing System - MurtiKart{% endblock %}
+{% block page_title %}Billing System{% endblock %}
+{% block nav_billing %}active{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    :root {
+        --receipt-maroon: #600000;
+        --receipt-gold: #D4AF37;
+        --receipt-border: #333;
+    }
+    body {
+        background-color: #f4f4f9;
+        font-family: 'Inter', sans-serif;
+    }
+    .receipt-container {
+        font-family: 'Mukta', sans-serif;
+        background: #fff;
+        color: #000;
+        min-height: 29.7cm; /* A4 height */
+        position: relative;
+        padding: 20px !important; /* Reduced padding to fit more */
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        border: 2px solid var(--receipt-border);
+    }
+    .shop-name-input {
+        color: var(--receipt-maroon);
+        font-weight: 800;
+        font-size: 1.8rem; /* Scaled down for better fit */
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: center;
+        outline: none;
+        font-family: 'Playfair Display', serif;
+    }
+    .header-input {
+        background: transparent;
+        border: none;
+        text-align: center;
+        width: 100%;
+        font-size: 0.85rem;
+        outline: none;
+    }
+    .mob-input {
+        background: transparent;
+        border: none;
+        text-align: right;
+        width: 100px;
+        outline: none;
+        font-size: 0.75rem;
+    }
+    .customer-detail-field {
+        border: none;
+        border-bottom: 1px dashed #ccc;
+        border-radius: 0;
+        padding: 0 2px;
+        background: transparent !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+    .customer-detail-field:focus {
+        box-shadow: none;
+        border-bottom-color: var(--receipt-maroon);
+    }
+    .receipt-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 0 !important;
+        table-layout: fixed;
+    }
+    .receipt-table th {
+        background: #f8f8f8 !important;
+        border: 1px solid var(--receipt-border) !important;
+        text-align: center;
+        font-size: 0.65rem;
+        padding: 2px !important;
+        text-transform: uppercase;
+    }
+    .receipt-table td {
+        border: 1px solid var(--receipt-border) !important;
+        padding: 1px 3px !important;
+        vertical-align: middle;
+        font-size: 0.7rem;
+        height: 20px;
+    }
+    .dual-table-container {
+        display: flex;
+        width: 100%;
+        border: 1px solid var(--receipt-border);
+        margin-bottom: 10px;
+    }
+    .dual-table-container > div {
+        flex: 1;
+    }
+    .dual-table-container > div:first-child {
+        border-right: 1px solid var(--receipt-border);
+    }
+    
+    .price-input, .qty-input, .model-input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: center;
+        font-size: 0.7rem;
+        outline: none;
+    }
+    .model-input { text-align: left; }
+    
+    .row-total {
+        font-weight: 700;
+        color: var(--receipt-maroon);
+    }
+    .grand-total-box {
+        background: var(--receipt-maroon);
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    
+    /* MULTI-PAGE PRINTING & PAGINATION */
+    @media print {
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+        body { background: #fff !important; }
+        .no-print { display: none !important; }
+        .receipt-container {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            background: #fff !important;
+        }
+        .receipt-page {
+            page-break-after: always;
+            padding: 10px !important;
+            margin: 0 !important;
+            min-height: 29.5cm;
+            position: relative;
+        }
+        .receipt-page:last-child {
+            page-break-after: auto;
+        }
+    }
+    
+    .receipt-page {
+        background: #fff;
+        margin-bottom: 20px;
+        padding: 30px;
+        border: 2px solid var(--receipt-border);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="no-print mb-4 d-flex align-items-center gap-2">
+    <button class="btn btn-primary rounded-pill px-4" id="addRowBtn">
+        <i class="fa-solid fa-plus me-2"></i> <span>Add Model</span>
+    </button>
+    <button class="btn btn-success rounded-pill px-4" id="saveInvoiceBtn">
+        <i class="fa-solid fa-cloud-arrow-up me-2"></i> <span>Save Invoice</span>
+    </button>
+    <button class="btn btn-outline-danger rounded-pill px-4" onclick="window.print()">
+        <i class="fa-solid fa-print me-2"></i> <span>Print / PDF</span>
+    </button>
+</div>
+
+<!-- All Pages will be rendered inside this container -->
+<div id="receiptArea" class="mx-auto" style="max-width: 900px;">
+    <!-- Rendered via JavaScript -->
+</div>
+
+<!-- Products Datalist for auto-suggest -->
+<datalist id="productList">
+    {% for p in products %}
+    <option value="{{ p.model_number }}" data-price="{{ p.price }}">
+    {% endfor %}
+</datalist>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+    let invoiceItems = [];
+    let invoiceMeta = {
+        businessName: "{{ user.business_name|default:'MurtiKart Art Lab' }}",
+        businessAddress: "{{ user.address|default:'Festive Street, Pune' }}",
+        proprietorName: "{{ user.proprietor_name|default:'Proprietor Name' }}",
+        mobile1: "{{ user.mobile|default:'' }}",
+        mobile2: "{{ user.mobile2|default:'' }}",
+        mobile3: "{{ user.mobile3|default:'' }}",
+        custName: "",
+        custAddr: "",
+        custMobile: "",
+        receiptNo: "101",
+        currentDate: "{% now 'd/m/Y' %}",
+        bookingDate: "{% now 'd/m/Y' %}",
+        deliveryDate: "",
+        advanceAmt: 0
+    };
+
+    function addRow() {
+        invoiceItems.push({ model: '', price: 0, qty: 1, total: 0 });
+        renderPages();
+    }
+
+    function removeRow(index) {
+        invoiceItems.splice(index, 1);
+        renderPages();
+    }
+
+    function updateItem(index, field, value) {
+        invoiceItems[index][field] = value;
+        if (field === 'price' || field === 'qty') {
+            invoiceItems[index].total = Math.round((invoiceItems[index].price || 0) * (invoiceItems[index].qty || 0));
+        }
+        if (field === 'model') {
+            const options = document.querySelectorAll('#productList option');
+            options.forEach(opt => {
+                if (opt.value === value) {
+                    invoiceItems[index].price = parseFloat(opt.getAttribute('data-price')) || 0;
+                    invoiceItems[index].total = Math.round(invoiceItems[index].price * invoiceItems[index].qty);
+                }
+            });
+            renderPages(); // Need full re-render for datalist side effects
+        } else {
+            calcTotal();
+            // Local update for performance
+            const rowTotalEl = document.querySelector(`[data-item-index="${index}"] .row-total`);
+            if (rowTotalEl) rowTotalEl.innerText = invoiceItems[index].total;
+        }
+    }
+
+    function updateMeta(field, value) {
+        invoiceMeta[field] = value;
+        if (field === 'advanceAmt') calcTotal();
+    }
+
+    function renderPages() {
+        const container = document.getElementById('receiptArea');
+        container.innerHTML = '';
+        
+        const itemsPerPage = 60;
+        const totalPages = Math.max(1, Math.ceil(invoiceItems.length / itemsPerPage));
+
+        for (let p = 0; p < totalPages; p++) {
+            const pageEl = document.createElement('div');
+            pageEl.className = 'receipt-page';
+            
+            // 1. Header (Every Page)
+            pageEl.innerHTML = `
+                <div class="text-center mb-1"><small>॥ श्री गणेशाय नमः ॥</small></div>
+                <div class="receipt-header d-flex align-items-start justify-content-between mb-3 px-2">
+                    <div style="width: 150px;"></div>
+                    <div class="text-center flex-grow-1">
+                        <input type="text" class="shop-name-input" value="${invoiceMeta.businessName}" onchange="updateMeta('businessName', this.value)">
+                        <input type="text" class="header-input" value="${invoiceMeta.businessAddress}" onchange="updateMeta('businessAddress', this.value)">
+                        <input type="text" class="header-input fw-bold" style="font-size: 1.1rem; margin-top: 5px;" value="${invoiceMeta.proprietorName}" onchange="updateMeta('proprietorName', this.value)">
+                    </div>
+                    <div class="text-end header-meta pt-2" style="width: 200px; font-size: 0.85rem;">
+                        <div class="d-flex align-items-center justify-content-end mb-1">
+                            <span>Mob: </span><input type="text" class="mob-input" value="${invoiceMeta.mobile1}" onchange="updateMeta('mobile1', this.value)">
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end mb-1">
+                            <span>Mob: </span><input type="text" class="mob-input" value="${invoiceMeta.mobile2}" onchange="updateMeta('mobile2', this.value)">
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end">
+                            <span>Mob: </span><input type="text" class="mob-input" value="${invoiceMeta.mobile3}" onchange="updateMeta('mobile3', this.value)">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 2. Customer Details (Only Page 1)
+            if (p === 0) {
+                pageEl.innerHTML += `
+                <div class="customer-info border-top border-bottom py-3 mb-3">
+                    <div class="row g-3">
+                        <div class="col-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2 fw-bold">Name :</span>
+                                <input type="text" class="form-control customer-detail-field flex-grow-1" value="${invoiceMeta.custName}" onchange="updateMeta('custName', this.value)">
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2 fw-bold">Address :</span>
+                                <input type="text" class="form-control customer-detail-field flex-grow-1" value="${invoiceMeta.custAddr}" onchange="updateMeta('custAddr', this.value)">
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6 d-flex align-items-center">
+                                    <span class="me-2 fw-bold">Booking Date :</span>
+                                    <input type="text" class="form-control customer-detail-field w-50" value="${invoiceMeta.bookingDate}" onchange="updateMeta('bookingDate', this.value)">
+                                </div>
+                                <div class="col-6 d-flex align-items-center justify-content-end">
+                                    <span class="me-2 fw-bold">Delivery Date :</span>
+                                    <input type="text" class="form-control customer-detail-field w-50" value="${invoiceMeta.deliveryDate}" onchange="updateMeta('deliveryDate', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-flex align-items-center justify-content-end mb-2">
+                                <span class="me-2 fw-bold">Receipt No. :</span>
+                                <input type="text" class="form-control customer-detail-field text-center" style="width: 80px;" value="${invoiceMeta.receiptNo}" onchange="updateMeta('receiptNo', this.value)">
+                            </div>
+                            <div class="d-flex align-items-center justify-content-end mb-2">
+                                <span class="me-2 fw-bold">Date :</span>
+                                <input type="text" class="form-control customer-detail-field text-center" style="width: 100px;" value="${invoiceMeta.currentDate}" onchange="updateMeta('currentDate', this.value)">
+                            </div>
+                            <div class="d-flex align-items-center justify-content-end">
+                                <span class="me-2 fw-bold">Mob. No. :</span>
+                                <input type="text" class="form-control customer-detail-field text-center" style="width: 130px;" value="${invoiceMeta.custMobile}" onchange="updateMeta('custMobile', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // 3. Dual Table
+            const pageItems = invoiceItems.slice(p * itemsPerPage, (p + 1) * itemsPerPage);
+            const dualTable = document.createElement('div');
+            dualTable.className = 'dual-table-container';
+            
+            const leftCol = document.createElement('div');
+            const rightCol = document.createElement('div');
+            
+            const createTableHtml = (startIndex, count) => {
+                let html = `<table class="receipt-table">
+                    <thead><tr><th style="width:12%">Sr.</th><th style="width:40%">Model No.</th><th style="width:15%">Price</th><th style="width:12%">Qty</th><th style="width:21%">Total</th></tr></thead>
+                    <tbody>`;
+                
+                for (let i = 0; i < 30; i++) {
+                    const itemIdx = p * itemsPerPage + startIndex + i;
+                    const item = invoiceItems[itemIdx];
+                    if (item) {
+                        html += `<tr data-item-index="${itemIdx}">
+                            <td class="text-center"><b>${itemIdx + 1}</b></td>
+                            <td><input type="text" class="model-input" list="productList" value="${item.model}" oninput="updateItem(${itemIdx}, 'model', this.value)"></td>
+                            <td><input type="number" class="price-input" value="${item.price}" oninput="updateItem(${itemIdx}, 'price', parseFloat(this.value))"></td>
+                            <td><input type="number" class="qty-input" value="${item.qty}" oninput="updateItem(${itemIdx}, 'qty', parseFloat(this.value))"></td>
+                            <td class="text-end pe-1"><span class="row-total">${item.total}</span>
+                            <button class="btn btn-link btn-sm text-danger no-print p-0 ms-1" onclick="removeRow(${itemIdx})"><i class="fa-solid fa-xmark"></i></button></td>
+                        </tr>`;
+                    } else {
+                        html += `<tr><td class="text-center text-muted small">${itemIdx + 1}</td><td></td><td></td><td></td><td></td></tr>`;
+                    }
+                }
+                html += `</tbody></table>`;
+                return html;
+            };
+
+            leftCol.innerHTML = createTableHtml(0, 30);
+            rightCol.innerHTML = createTableHtml(30, 30);
+            
+            dualTable.appendChild(leftCol);
+            dualTable.appendChild(rightCol);
+            pageEl.appendChild(dualTable);
+
+            // 4. Footer & Totals (Only Last Page)
+            if (p === totalPages - 1) {
+                const footerArea = document.createElement('div');
+                footerArea.className = 'signatures-area mt-3';
+                footerArea.innerHTML = `
+                    <div class="row g-0 pt-2">
+                        <div class="col-7">
+                            <div class="small text-muted italic" style="font-size: 0.8rem;">
+                                <p class="mb-1">* Note: Full payment must be made before taking delivery.</p>
+                                <p class="mb-1">* Advance amount is non-refundable upon cancellation of booking.</p>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <table class="table table-borderless mb-0 fw-bold small">
+                                <tr><td>Total :</td><td class="text-end">₹ <span id="grandTotal">0</span></td></tr>
+                                <tr><td>Advance :</td><td class="text-end">₹ <input type="number" class="customer-detail-field text-end fw-bold" style="width: 80px;" value="${invoiceMeta.advanceAmt}" oninput="updateMeta('advanceAmt', parseFloat(this.value))"></td></tr>
+                                <tr class="grand-total-box"><td>Balance :</td><td class="text-end">₹ <span id="balanceAmt">0</span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-4 mb-2 d-none d-print-flex">
+                        <div class="col-6"><hr style="width:120px"><p class="small">Customer Signature</p></div>
+                        <div class="col-6 text-end"><hr style="width:120px; margin-left:auto"><p class="small">Authorized Signature</p></div>
+                    </div>
+                    <div class="text-center mt-2 small text-muted">Page ${p + 1} of ${totalPages}</div>
+                `;
+                pageEl.appendChild(footerArea);
+            } else {
+                const pageNum = document.createElement('div');
+                pageNum.className = 'text-center mt-2 small text-muted';
+                pageNum.innerText = `Page ${p + 1} of ${totalPages}`;
+                pageEl.appendChild(pageNum);
+            }
+
+            container.appendChild(pageEl);
+        }
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let grand = 0;
+        invoiceItems.forEach(item => grand += item.total || 0);
+        const advance = invoiceMeta.advanceAmt || 0;
+        const balance = grand - advance;
+
+        const gtEl = document.getElementById('grandTotal');
+        const baEl = document.getElementById('balanceAmt');
+        if (gtEl) gtEl.innerText = grand.toLocaleString('en-IN');
+        if (baEl) baEl.innerText = Math.max(0, balance).toLocaleString('en-IN');
+    }
+
+    document.getElementById('addRowBtn').addEventListener('click', addRow);
+
+    document.getElementById('saveInvoiceBtn').addEventListener('click', function() {
+        const filteredItems = invoiceItems.filter(i => i.model !== '');
+        if(filteredItems.length === 0) { alert("Please add at least one item."); return; }
+        const data = { ...invoiceMeta, items: filteredItems, total_amount: parseFloat(document.getElementById('grandTotal').innerText.replace(/,/g, '')) };
+        this.disabled = true; this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        fetch(window.location.href, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }, body: JSON.stringify(data) })
+        .then(r => r.json()).then(res => { if(res.status === 'success') alert("Saved!"); else alert("Error: " + res.message); })
+        .catch(err => alert("Error: " + err)).finally(() => { this.disabled = false; this.innerHTML = 'Save Invoice'; });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        addRow();
+    });
+</script>
+{% endblock %}

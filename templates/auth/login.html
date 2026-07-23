@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MurtiKart - Secure Access</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --metallic-gold: #d4af37; 
+            --deep-red: #2c0e0e; 
+        }
+
+        body {
+            background: #1a0505;
+            background: radial-gradient(circle at center, var(--deep-red) 0%, #1a0505 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        /* Fixed Language Switcher (Same as Register) */
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--metallic-gold);
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            min-width: 90px;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .lang-btn.active {
+            background: var(--metallic-gold);
+            color: #1a0505;
+            font-weight: bold;
+        }
+
+        /* Container Styling */
+        .login-split-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .hero-side {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .form-side {
+            flex: 1.2;
+            padding: 50px;
+        }
+
+        .label-gold {
+            color: var(--metallic-gold);
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            padding: 12px 18px;
+            border-radius: 12px;
+        }
+
+        .form-select option {
+            background: #2c0e0e;
+            color: #f5e6c8;
+        }
+
+        .btn-primary {
+            background: var(--metallic-gold);
+            border: none;
+            color: #1a0505;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #f5e6c8;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-side { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switcher">
+        <button type="button" class="lang-btn active" id="btn-en" onclick="changeLang('en')">English</button>
+        <button type="button" class="lang-btn" id="btn-mr" onclick="changeLang('mr')">मराठी</button>
+    </div>
+
+    <div class="login-split-container animate-up">
+        
+        <div class="hero-side d-none d-md-flex">
+            <img src="{% static 'assets/images/logo.png' %}" alt="Logo" style="height: 50px; margin-bottom: 30px;">
+            <img src="{% static 'assets/images/ganesha_hero.png' %}" alt="Ganesha" style="max-height: 250px;">
+            <div class="mt-4">
+                <h1 style="font-family: 'Playfair Display'; font-size: 2.2rem;">MurtiKart</h1>
+                <p style="color: var(--metallic-gold);">Premium Artisan Collection</p>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <div class="mb-4">
+                <h2 class="fw-bold" id="login-title">Premium Portal</h2>
+                <p class="text-white-50 small" id="login-subtitle">Access your management dashboard</p>
+            </div>
+
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-danger py-2 small" style="background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545; color: #ff8585;">
+                        {{msg}}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="label-gold" id="lbl-role">Access Role</label>
+                    <select class="form-select" name="role" required>
+                        <option value="" disabled selected>Select Role...</option>
+                        <option value="admin">System Administrator</option>
+                        <option value="customer">Customer</option>
+                        <option value="wholesaler">Wholesale Partner</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="label-gold" id="lbl-email">Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="label-gold" id="lbl-pass">Secure Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-3 mb-3" id="btn-login">
+                    ENTER DASHBOARD
+                </button>
+
+                <p class="text-center text-white-50 small">
+                    <span id="txt-new">New partner?</span> 
+                    <a href="{% url 'auth:register' %}" style="color: var(--metallic-gold); text-decoration: none; font-weight: 600;" id="lnk-reg">Create account</a>
+                </p>
+                <!-- forgot pasw -->
+                <p class="text-center text-white-50 small mb-10">
+                    <span id="txt-new">Forgot Password?</span> 
+                    <a href="{% url 'auth:password_reset' %}" style="color: var(--metallic-gold); text-decoration: none; font-weight: 600;" id="lnk-reg">Forgot Password</a>
+                </p>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function changeLang(lang) {
+            const btns = document.querySelectorAll('.lang-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if(lang === 'mr') {
+                document.getElementById('btn-mr').classList.add('active');
+                document.getElementById('login-title').innerText = "प्रीमियम पोर्टल";
+                document.getElementById('login-subtitle').innerText = "तुमच्या डॅशबोर्डमध्ये प्रवेश करा";
+                document.getElementById('lbl-role').innerText = "प्रवेश भूमिका";
+                document.getElementById('lbl-email').innerText = "ईमेल पत्ता";
+                document.getElementById('lbl-pass').innerText = "सुरक्षित पासवर्ड";
+                document.getElementById('btn-login').innerText = "डॅशबोर्डवर जा";
+                document.getElementById('txt-new').innerText = "नवीन भागीदार?";
+                document.getElementById('lnk-reg').innerText = "खाते तयार करा";
+            } else {
+                document.getElementById('btn-en').classList.add('active');
+                document.getElementById('login-title').innerText = "Premium Portal";
+                document.getElementById('login-subtitle').innerText = "Access your management dashboard";
+                document.getElementById('lbl-role').innerText = "Access Role";
+                document.getElementById('lbl-email').innerText = "Email Address";
+                document.getElementById('lbl-pass').innerText = "Secure Password";
+                document.getElementById('btn-login').innerText = "ENTER DASHBOARD";
+                document.getElementById('txt-new').innerText = "New partner?";
+                document.getElementById('lnk-reg').innerText = "Create account";
+            }
+        }
+    </script>
+</body>
+</html>

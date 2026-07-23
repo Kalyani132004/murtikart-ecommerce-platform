@@ -1,0 +1,90 @@
+{% extends 'custom_admin/base_admin.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{%load custom_filters %}
+{% block page_content %}
+<div class="p-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>User Name</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.user.full_name }}</td>
+                            <td>{{ order.date|date:"d M Y" }}</td>
+                            <td>₹{{ order.total_amount|subtract:order.paid_amount }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.status == 'confirmed' %}bg-success
+                                    {% elif order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-primary{% endif %}">
+                                    {{ order.status|upper }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editOrder{{ order.id }}">
+                                    <i class="fa-solid fa-pen-to-square"></i> Manage
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="editOrder{{ order.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form action="{% url 'admin_panel:update_order_status' order.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Manage Order #{{ order.id }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Update Status</label>
+                                                <select name="status" class="form-select">
+                                                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                    <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                                    <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <hr>
+                                            <h6 class="fw-bold">Edit Items & Quantity</h6>
+                                            {% for item in order.items.all %}
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span>{{ item.product.name }}</span>
+                                                <input type="number" name="qty_{{ item.id }}" value="{{ item.quantity }}" class="form-control form-control-sm w-25" min="1">
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center">No orders found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

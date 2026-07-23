@@ -1,0 +1,140 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% block page_title %}Business Analytics Report{% endblock %}
+
+{% block page_content %}
+<div class="p-4" style="background-color: #f8f9fa;">
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75">Total Revenue</p>
+                        <h3 class="mb-0">₹{{ total_rev }}</h3>
+                    </div>
+                    <i class="fa-solid fa-wallet fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75">Payments Received</p>
+                        <h3 class="mb-0">₹{{ total_paid }}</h3>
+                    </div>
+                    <i class="fa-solid fa-check-double fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-danger text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75" >Total Pending</p>
+                        <h3 class="mb-0">₹{{ total_pending }}</h3>
+                    </div>
+                    <i class="fa-solid fa-clock-rotate-left fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h5 class="fw-bold"><i class="fa-solid fa-chart-line text-primary me-2"></i>Sales Trends</h5>
+                <canvas id="bookingsChart" height="120"></canvas>
+            </div>
+            
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold text-success"><i class="fa-solid fa-money-bill-trend-up me-2"></i>Monthly Revenue</h5>
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 mb-4 text-center">
+                <h6 class="fw-bold mb-3">Sales by User Role</h6>
+                <canvas id="roleChart"></canvas>
+            </div>
+
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i>Low Stock Alerts</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr><th>Model</th><th>Stock</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td><span class="badge bg-soft-danger text-danger">{{ item.stock }} left</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-muted text-center">All models in stock!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-danger { background-color: #f8d7da; }
+    .card { border-radius: 12px; }
+</style>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Bookings Chart
+    new Chart(document.getElementById('bookingsChart'), {
+        type: 'line',
+        data: {
+            labels: {{ booking_labels|safe }},
+            datasets: [{
+                label: 'Orders',
+                data: {{ booking_counts|safe }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        }
+    });
+
+    // 2. Revenue Chart
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ revenue_labels|safe }},
+            datasets: [{
+                label: 'Revenue ₹',
+                data: {{ revenue_counts|safe }},
+                backgroundColor: '#198754',
+                borderRadius: 5
+            }]
+        }
+    });
+
+    // 3. Role Chart (Pie)
+    new Chart(document.getElementById('roleChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ role_labels|safe }},
+            datasets: [{
+                data: {{ role_values|safe }},
+                backgroundColor: ['#0d6efd', '#ffc107', '#dc3545']
+            }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+});
+</script>
+{% endblock %}

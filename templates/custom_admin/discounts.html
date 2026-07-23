@@ -1,0 +1,96 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Discounts - MurtiKart{% endblock %}
+{% block page_title %}Discounts{% endblock %}
+{% block nav_discounts %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="festive-font">Discount Tiers (Wholesale)</h4>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTierModal">
+            <i class="fa-solid fa-plus me-2"></i>Add New Tier
+        </button>
+    </div>
+    
+    <div class="row g-4">
+        {% for discount in discounts %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-top 
+                {% if 'Silver' in discount.tier_name %}border-secondary
+                {% elif 'Gold' in discount.tier_name %}border-warning
+                {% elif 'Platinum' in discount.tier_name %}border-info
+                {% else %}border-primary{% endif %} border-4">
+                
+                <div class="card-body p-4 text-center">
+                    <div class="fs-1 mb-3 
+                        {% if 'Silver' in discount.tier_name %}text-secondary
+                        {% elif 'Gold' in discount.tier_name %}text-warning
+                        {% elif 'Platinum' in discount.tier_name %}text-info
+                        {% else %}text-primary{% endif %}">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h5 class="card-title">{{ discount.tier_name }}</h5>
+                    <p class="text-muted">Orders: ₹{{ discount.min_price|floatformat:0 }} - ₹{{ discount.max_price|floatformat:0 }}</p>
+                    <h2 class="text-primary mb-4">{{ discount.discount_percent }}% OFF</h2>
+                    
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'admin_panel:edit_discount' discount.id %}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
+
+                        <form action="{% url 'admin_panel:delete_discount' discount.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this tier?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No discount tiers created yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="modal fade" id="addTierModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Discount Tier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'admin_panel:add_discount' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tier Name</label>
+                            <input type="text" name="tier_name" class="form-control" placeholder="e.g., Bronze Tier" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Min Purchase (₹)</label>
+                                <input type="number" name="min_price" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Max Purchase (₹)</label>
+                                <input type="number" name="max_price" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Discount Percentage (%)</label>
+                            <input type="number" name="discount_percent" class="form-control" min="1" max="100" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Tier</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

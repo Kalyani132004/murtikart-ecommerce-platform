@@ -1,0 +1,287 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MurtiKart - Registration</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --metallic-gold: #d4af37; 
+            --deep-red: #2c0e0e; 
+            --glass-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            background: #1a0505;
+            background: radial-gradient(circle at center, var(--deep-red) 0%, #1a0505 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .register-split-container {
+            max-width: 1100px;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Language Switcher Fix */
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--metallic-gold);
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            min-width: 90px;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .lang-btn.active {
+            background: var(--metallic-gold);
+            color: #1a0505;
+            font-weight: bold;
+        }
+
+        /* Hero Side Styling */
+        .hero-side {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .hero-illustration {
+            max-height: 300px;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.2));
+        }
+
+        /* Form Side Styling */
+        .form-side {
+            flex: 1.4;
+            padding: 40px 50px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Custom Scrollbar for Form */
+        .form-side::-webkit-scrollbar { width: 6px; }
+        .form-side::-webkit-scrollbar-thumb { background: var(--metallic-gold); border-radius: 10px; }
+
+        .label-gold {
+            color: var(--metallic-gold);
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            padding: 12px 18px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .form-select option {
+            background: #2c0e0e;
+            color: #f5e6c8;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2) !important;
+            border-color: var(--metallic-gold) !important;
+        }
+
+        .btn-primary {
+            background: var(--metallic-gold);
+            border: none;
+            color: #1a0505;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #f5e6c8;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-side { display: none; }
+            .form-side { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switcher">
+        <button type="button" class="lang-btn active" id="btn-en" onclick="changeLang('en')">English</button>
+        <button type="button" class="lang-btn" id="btn-mr" onclick="changeLang('mr')">मराठी</button>
+    </div>
+
+    <div class="register-split-container animate-up">
+        
+        <div class="hero-side d-none d-lg-flex">
+            <img src="{% static 'assets/images/logo.png' %}" alt="Logo" style="height: 50px; margin-bottom: 40px;">
+            <img src="{% static 'assets/images/ganesha_hero.png' %}" alt="Ganesha" class="hero-illustration">
+            <div class="mt-4">
+                <h1 style="font-family: 'Playfair Display'; font-size: 2.5rem;">MurtiKart</h1>
+                <p style="color: var(--metallic-gold);">Join the Festive Business Community</p>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <div class="mb-4">
+                <h2 class="fw-bold" id="reg-title">Registration</h2>
+                <p class="text-white-50 small" id="reg-subtitle">Create your premium merchant account</p>
+            </div>
+
+            {% if messages %}
+                {% for msg in messages %}
+                    {% if msg.tags == "error"%}
+                    <div class="alert alert-danger py-2 small" style="background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545; color: #ff8585;">
+                        {{msg}}
+                    </div>
+                    {% elif msg.tags == "success" %}
+                     <div class="alert alert-danger py-2 small" style="background: rgba(220, 53, 69, 0.2); border: 1px solid green; color: green;">
+                        {{msg}}
+                    </div>
+                    {% endif %}
+
+                {% endfor %}
+            {% endif %}
+
+            <form id="registerForm" method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="label-gold" id="lbl-name">Full Name</label>
+                        <input type="text" name="fullname" class="form-control" placeholder="Kalpesh Patil" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label-gold" id="lbl-biz">Business Name</label>
+                        <input type="text" name="bussiness_name" class="form-control" placeholder="Patil Arts">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="label-gold" id="lbl-email">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="kalpesh@example.com" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="label-gold" id="lbl-role">Partner Category</label>
+                        <select class="form-select" name="role" required>
+                            <option value="" disabled selected>Select Role...</option>
+                            <option value="admin">System Administrator</option>
+                            <option value="customer">Customer</option>
+                            <option value="wholesaler">Wholesale Partner</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label-gold" id="lbl-pass1">Password</label>
+                        <input type="password" name="pass1" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label-gold" id="lbl-pass2">Confirm Password</label>
+                        <input type="password" name="pass2" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="label-gold" id="lbl-mob">Mobile Number</label>
+                        <input type="text" name="mobile" class="form-control" placeholder="+91 " required>
+                    </div>
+                </div>
+
+                <div class="form-check mt-3">
+                    <!-- <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label small text-white-50" for="terms" id="lbl-terms">
+                        I agree to the Terms and Conditions
+                    </label> -->
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="btn-reg">CREATE ACCOUNT</button>
+
+                <p class="text-center text-white-50 small mt-4">
+                    <span id="txt-already">Already a partner?</span> 
+                    <a href="{% url 'auth:login' %}" style="color: var(--metallic-gold); text-decoration: none; font-weight: 600;" id="lnk-login">Login here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function changeLang(lang) {
+            const btns = document.querySelectorAll('.lang-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if(lang === 'mr') {
+                document.getElementById('btn-mr').classList.add('active');
+                document.getElementById('reg-title').innerText = "नवीन नोंदणी";
+                document.getElementById('reg-subtitle').innerText = "तुमचे मूर्र्तीकार्ट खाते तयार करा";
+                document.getElementById('lbl-name').innerText = "पूर्ण नाव";
+                document.getElementById('lbl-biz').innerText = "व्यवसायाचे नाव";
+                document.getElementById('lbl-email').innerText = "ईमेल पत्ता";
+                document.getElementById('lbl-role').innerText = "भागीदार श्रेणी";
+                document.getElementById('lbl-pass1').innerText = "पासवर्ड";
+                document.getElementById('lbl-pass2').innerText = "पासवर्डची पुष्टी करा";
+                document.getElementById('lbl-mob').innerText = "मोबाईल नंबर";
+                document.getElementById('btn-reg').innerText = "खाते तयार करा";
+                document.getElementById('txt-already').innerText = "आधीच खाते आहे?";
+                document.getElementById('lnk-login').innerText = "येथे लॉगिन करा";
+            } else {
+                document.getElementById('btn-en').classList.add('active');
+                document.getElementById('reg-title').innerText = "Registration";
+                document.getElementById('reg-subtitle').innerText = "Create your premium merchant account";
+                document.getElementById('lbl-name').innerText = "Full Name";
+                document.getElementById('lbl-biz').innerText = "Business Name";
+                document.getElementById('lbl-email').innerText = "Email Address";
+                document.getElementById('lbl-role').innerText = "Partner Category";
+                document.getElementById('lbl-pass1').innerText = "Password";
+                document.getElementById('lbl-pass2').innerText = "Confirm Password";
+                document.getElementById('lbl-mob').innerText = "Mobile Number";
+                document.getElementById('btn-reg').innerText = "CREATE ACCOUNT";
+                document.getElementById('txt-already').innerText = "Already a partner?";
+                document.getElementById('lnk-login').innerText = "Login here";
+            }
+        }
+    </script>
+</body>
+</html>

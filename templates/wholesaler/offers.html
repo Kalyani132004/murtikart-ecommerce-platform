@@ -1,0 +1,74 @@
+{% extends 'wholesaler/base_wholesaler.html' %}
+{% load static %}
+
+{% block title %}Discount Offers - MurtiKart{% endblock %}
+{% block page_title %}Discount Offers{% endblock %}
+{% block nav_offers %}active{% endblock %}
+
+{% block page_content %}
+
+<div class="p-4">
+    <div class="card bg-dark text-white p-4 mb-5 border-0 rounded-4 shadow overflow-hidden position-relative" style="background: linear-gradient(145deg, #1a0505, #2c0e0e);">
+    <div class="position-relative z-index-1">
+        <h2 class="festive-font" style="color: #d4af37; font-family: 'Playfair Display', serif;">Wholesaler Exclusive Offers</h2>
+        
+        <p style="color: #f5e6c8; font-weight: 500; text-shadow: 0px 2px 4px rgba(0,0,0,0.3);">
+            The following discounts will apply depending on your order value.
+        </p>
+    </div>
+    
+    <i class="fa-solid fa-award position-absolute end-0 bottom-0 opacity-10" 
+       style="font-size: 12rem; transform: translate(20%, 20%); color: #d4af37;"></i>
+</div>
+    <h4 class="mb-4 text-dark fw-bold">Price-wise Discount Tiers</h4>
+    <div class="row g-4">
+        {% if offers %}
+            {% for offer in offers %}
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 text-center p-4 {% if 'Gold' in offer.tier_name %}border-primary border-2 shadow{% else %}bg-light{% endif %}">
+                        
+                        <div class="fs-1 mb-3">
+                            {% if forloop.first %}
+                                <i class="fa-solid fa-medal text-secondary"></i>
+                            {% elif forloop.last %}
+                                <i class="fa-solid fa-crown text-info"></i>
+                            {% else %}
+                                <i class="fa-solid fa-award text-warning"></i>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold">{{ offer.tier_name }}</h5>
+                        
+                        <p class="small text-muted mb-3">
+                            Order Price: ₹{{ offer.min_price|floatformat:0 }} 
+                            {% if offer.max_price > 0 %}
+                                - ₹{{ offer.max_price|floatformat:0 }}
+                            {% else %}
+                                & Above
+                            {% endif %}
+                        </p>
+
+                        <h3 class="text-primary mb-0 fw-bold">{{ offer.discount_percent }}% OFF</h3>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5 bg-white rounded shadow-sm">
+                <p class="text-muted">सध्या कोणतीही ऑफर उपलब्ध नाही.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-5 p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="fw-bold"><i class="fa-solid fa-circle-question me-2 text-primary"></i>How it works?</h5>
+                <p class="mb-0 text-muted">The discount is automatically applied to your **Final Payable Amount** based on the total cart value. No coupons needed!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'wholesaler:models' %}" class="btn btn-primary px-4 shadow-sm">Start Order</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

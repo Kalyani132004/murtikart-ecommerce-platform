@@ -1,0 +1,179 @@
+/* 
+   MurtiKart Traditional Receipt / Invoice Styles
+   Professional high-end design for customer bills.
+*/
+
+:root {
+    --receipt-maroon: #600000;
+    --receipt-gold: #D4AF37;
+    --receipt-bg: #fff;
+    --receipt-border: #eee;
+}
+
+.traditional-receipt {
+    background: var(--receipt-bg);
+    border: 3px double var(--receipt-maroon);
+    padding: 50px;
+    position: relative;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    margin: 20px auto;
+    max-width: 900px;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    line-height: 1.5;
+}
+
+.receipt-inner-border {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    border: 1px solid rgba(96, 0, 0, 0.15);
+    pointer-events: none;
+}
+
+.receipt-header {
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 2px dashed rgba(96, 0, 0, 0.1);
+    position: relative;
+}
+
+.shop-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--receipt-maroon);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.invoice-label {
+    display: inline-block;
+    background: var(--receipt-maroon);
+    color: var(--receipt-gold);
+    padding: 8px 35px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    margin: 20px 0;
+    box-shadow: 0 5px 15px rgba(96, 0, 0, 0.2);
+}
+
+.paid-stamp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    font-size: 10rem;
+    font-weight: 950;
+    color: rgba(96, 0, 0, 0.05);
+    border: 12px solid rgba(96, 0, 0, 0.05);
+    padding: 0 50px;
+    border-radius: 30px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.table-premium {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 30px 0;
+    z-index: 2;
+    position: relative;
+}
+
+.table-premium thead th {
+    background: rgba(96, 0, 0, 0.03);
+    color: var(--receipt-maroon);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 15px;
+    border-bottom: 2px solid var(--receipt-maroon);
+    text-align: center;
+}
+
+.table-premium tbody td {
+    padding: 20px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 600;
+}
+
+.table-premium tfoot td {
+    padding: 12px 15px;
+    font-weight: 700;
+}
+
+.receipt-footer {
+    margin-top: 50px;
+    border-top: 2px dashed rgba(96, 0, 0, 0.1);
+    padding-top: 30px;
+    text-align: center;
+}
+
+.signature-box {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.signature-line {
+    width: 220px;
+    border-top: 2px solid var(--receipt-maroon);
+    margin: 10px auto;
+}
+
+/* Print Overrides */
+@media print {
+    /* Hide everything except the receipt */
+    #sidebar, .top-navbar, .no-print, .btn, .dropdown, hr { 
+        display: none !important; 
+    }
+    
+    /* Reset main content area */
+    #content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    
+    body { 
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .traditional-receipt {
+        box-shadow: none !important;
+        border: 2px solid var(--receipt-maroon);
+        margin: 0 auto !important;
+        width: 100%;
+        max-width: 100%;
+        padding: 25px !important; /* Reduced padding for 1-page fit */
+        transform-origin: top left;
+        page-break-after: always; /* Ensure each receipt starts on a new page if printing multiple */
+    }
+
+    .receipt-inner-border { 
+        top: 10px; left: 10px; right: 10px; bottom: 10px; 
+    }
+
+    .shop-name { font-size: 2.2rem !important; }
+    .paid-stamp { font-size: 6rem !important; opacity: 0.1 !important; }
+    .table-premium { margin: 15px 0 !important; }
+    .table-premium tbody td { padding: 12px 10px !important; }
+    
+    /* Ensure no header/footer from browser if possible */
+    @page {
+        size: auto;
+        margin: 10mm;
+    }
+}

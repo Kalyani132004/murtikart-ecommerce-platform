@@ -1,0 +1,368 @@
+{% extends 'custom_admin/base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Wholesalers - MurtiKart{% endblock %}
+{% block page_title %}Wholesalers & Orders{% endblock %}
+{% block nav_wholesalers %}active{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .order-card {
+        border: none;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        margin-bottom: 18px;
+        transition: box-shadow 0.2s;
+    }
+    .order-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
+    .status-pending   { background: #fff8e1; }
+    .status-confirmed { background: #f1f8e9; }
+    .status-delivered { background: #e3f2fd; }
+    .status-cancelled { background: #fce4ec; }
+    .badge-status {
+        font-size: 0.72rem;
+        padding: 5px 13px;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+    .ws-list-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .btn-admin-action {
+        border-radius: 50px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 4px 14px;
+    }
+    /* Tab button colors - always visible */
+    #wsTabs .nav-link {
+        color: #600000 !important;
+        background: #fde8e8 !important;
+        border: 2px solid #600000 !important;
+        font-weight: 600;
+    }
+    #wsTabs .nav-link:hover {
+        background: #f5c6c6 !important;
+        color: #600000 !important;
+    }
+    #wsTabs .nav-link.active {
+        background: #600000 !important;
+        color: #D4AF37 !important;
+        border-color: #600000 !important;
+    }
+    .pending-dot {
+        width: 10px; height: 10px;
+        background: #e65100;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%,100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="p-3">
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 rounded-4 text-center p-3 shadow-sm" style="background:linear-gradient(135deg,#fff8e1,#ffe082);">
+                <div class="fw-bold fs-4" style="color:#e65100;">
+                    {{ wholesale_orders|length }}
+                </div>
+                <div class="small text-muted">Total Orders</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 rounded-4 text-center p-3 shadow-sm" style="background:linear-gradient(135deg,#fff8e1,#ffcc80);">
+                <div class="fw-bold fs-4" style="color:#bf360c;">
+                    {% with pending=wholesale_orders|length %}{{ pending }}{% endwith %}
+                    {% comment %}Calculate in template{% endcomment %}
+                    <span id="pendingCount">–</span>
+                </div>
+                <div class="small text-muted"><span class="pending-dot me-1"></span>Pending</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 rounded-4 text-center p-3 shadow-sm" style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7);">
+                <div class="fw-bold fs-4 text-success" id="confirmedCount">–</div>
+                <div class="small text-muted">Confirmed</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 rounded-4 text-center p-3 shadow-sm" style="background:linear-gradient(135deg,#e3f2fd,#90caf9);">
+                <div class="fw-bold fs-4 text-primary" id="deliveredCount">–</div>
+                <div class="small text-muted">Delivered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="wsTabs">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill px-4" id="tabBtnOrders" onclick="showTab('ordersTab', this)">
+                <i class="fa-solid fa-cart-shopping me-2"></i>Wholesale Orders
+                {% with pending_count=wholesale_orders|length %}
+                <span class="badge bg-danger ms-1" id="pendingBadge"></span>
+                {% endwith %}
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4" onclick="showTab('wholesalersTab', this)">
+                <i class="fa-solid fa-shop me-2"></i>Wholesaler List
+            </button>
+        </li>
+    </ul>
+
+    <!-- TAB 1: Wholesale Orders -->
+    <div id="ordersTab">
+        {% if wholesale_orders %}
+        {% for order in wholesale_orders %}
+        <div class="order-card">
+            <div class="card-header status-{{ order.status }} d-flex justify-content-between align-items-center py-3 px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div>
+                        <div class="fw-bold" style="font-family:'Playfair Display',serif;">
+                            <i class="fa-solid fa-shop me-2 text-warning"></i>
+                            {{ order.user.full_name|default:order.user.username }}
+                        </div>
+                        <div class="text-muted" style="font-size:0.78rem;">
+                            Order #{{ order.id }}
+                            &nbsp;•&nbsp;
+                            {{ order.date|date:"d M Y, h:i A" }}
+                            &nbsp;•&nbsp;
+                            {{ order.items.count }} model(s)
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge-status
+                        {% if order.status == 'pending' %}bg-warning-subtle text-warning border border-warning
+                        {% elif order.status == 'confirmed' %}bg-success-subtle text-success border border-success
+                        {% elif order.status == 'delivered' %}bg-info-subtle text-info border border-info
+                        {% else %}bg-danger-subtle text-danger border border-danger{% endif %}">
+                        {% if order.status == 'pending' %}<i class="fa-solid fa-clock me-1"></i>
+                        {% elif order.status == 'confirmed' %}<i class="fa-solid fa-check me-1"></i>
+                        {% elif order.status == 'delivered' %}<i class="fa-solid fa-truck me-1"></i>
+                        {% else %}<i class="fa-solid fa-xmark me-1"></i>{% endif %}
+                        {{ order.status|title }}
+                    </span>
+                    <span class="fw-bold" style="color:#600000; font-size:1rem;">₹{{ order.total_amount|floatformat:0 }}</span>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3" style="font-size:0.72rem;">#</th>
+                                <th style="font-size:0.72rem;">Model No.</th>
+                                <th style="font-size:0.72rem;">Model Name</th>
+                                <th style="font-size:0.72rem;" class="text-center">Qty</th>
+                                <th style="font-size:0.72rem;" class="text-end">Unit Price</th>
+                                <th style="font-size:0.72rem;" class="text-end pe-3">Line Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td class="ps-3" style="font-size:0.8rem;">{{ forloop.counter }}</td>
+                                <td style="font-size:0.8rem;">
+                                    <span class="badge bg-light text-dark border" style="font-family:monospace;">
+                                        {{ item.product.model_number }}
+                                    </span>
+                                </td>
+                                <td style="font-size:0.8rem;" class="fw-semibold">{{ item.product.name }}</td>
+                                <td style="font-size:0.8rem;" class="text-center">
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">
+                                        {{ item.quantity }}
+                                    </span>
+                                </td>
+                                <td style="font-size:0.8rem;" class="text-end">₹{{ item.price|floatformat:0 }}</td>
+                                <td style="font-size:0.8rem;" class="text-end pe-3 fw-bold" style="color:#600000;">
+                                    ₹{% widthratio item.price 1 item.quantity %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-muted text-center small py-2">No items.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="5" class="text-end fw-bold pe-2" style="font-size:0.85rem;">Grand Total :</td>
+                                <td class="text-end pe-3 fw-bold" style="color:#600000;">
+                                    ₹{{ order.total_amount|floatformat:0 }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Note -->
+                {% if order.delivery_address %}
+                <div class="mx-3 mb-2 mt-1">
+                    <div class="alert alert-warning py-1 px-3 mb-0 d-flex align-items-center gap-2" style="font-size:0.8rem; border-radius:8px;">
+                        <i class="fa-solid fa-note-sticky text-warning"></i>
+                        <strong>Note:</strong> {{ order.delivery_address }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="card-footer bg-white py-2 px-3 d-flex gap-2 justify-content-end flex-wrap">
+                <!-- Edit Order -->
+                <a href="{% url 'admin_panel:edit_wholesale_order' order.id %}"
+                    class="btn btn-sm btn-admin-action"
+                    style="background:#600000; color:#D4AF37; border:none;">
+                    <i class="fa-solid fa-pen-to-square me-1"></i>Edit Order
+                </a>
+
+                <!-- Quick Status Actions -->
+                {% if order.status == 'pending' %}
+                <form method="post" action="{% url 'admin_panel:wholesalers' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="action" value="confirm">
+                    <button type="submit" class="btn btn-sm btn-success btn-admin-action">
+                        <i class="fa-solid fa-check me-1"></i>Confirm
+                    </button>
+                </form>
+                <form method="post" action="{% url 'admin_panel:wholesalers' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="action" value="cancel">
+                    <button type="submit" class="btn btn-sm btn-outline-danger btn-admin-action">
+                        <i class="fa-solid fa-xmark me-1"></i>Cancel
+                    </button>
+                </form>
+                {% elif order.status == 'confirmed' %}
+                <form method="post" action="{% url 'admin_panel:wholesalers' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="action" value="deliver">
+                    <button type="submit" class="btn btn-sm btn-primary btn-admin-action">
+                        <i class="fa-solid fa-truck me-1"></i>Mark Delivered
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-cart-shopping fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">No wholesale orders yet.</h6>
+            <p class="text-muted small">When wholesalers submit orders, they will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- TAB 2: Wholesaler List (DB-backed) -->
+    <div id="wholesalersTab" style="display:none;">
+        <div class="card ws-list-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">ID</th>
+                                <th>Name / Business</th>
+                                <th>Username</th>
+                                <th>Mobile</th>
+                                <th class="text-center">Total Orders</th>
+                                <th class="text-center">Pending</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ws in wholesaler_users %}
+                            <tr>
+                                <td class="ps-3 fw-bold text-muted">#{{ ws.id }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ ws.full_name|default:ws.username }}</div>
+                                    {% if ws.business_name %}
+                                    <div class="text-muted small"><i class="fa-solid fa-shop me-1"></i>{{ ws.business_name }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">
+                                        <i class="fa-solid fa-shop me-1"></i>{{ ws.username }}
+                                    </span>
+                                </td>
+                                <td class="small">{{ ws.mobile|default:"—" }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">
+                                        {{ ws.order_set.count }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    {% with p=ws.order_set.filter %}
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                                        {{ ws.order_set.all|length }}
+                                    </span>
+                                    {% endwith %}
+                                </td>
+                                <td class="small text-muted">{{ ws.date_joined|date:"d M Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No wholesalers registered yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+function showTab(tabId, btn) {
+    document.getElementById('ordersTab').style.display = 'none';
+    document.getElementById('wholesalersTab').style.display = 'none';
+    document.getElementById(tabId).style.display = 'block';
+    document.querySelectorAll('#wsTabs .nav-link').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+// Count statuses and update stats
+document.addEventListener('DOMContentLoaded', () => {
+    const statuses = [...document.querySelectorAll('.order-card')].map(card => {
+        const hdr = card.querySelector('.card-header');
+        if (hdr.classList.contains('status-pending'))   return 'pending';
+        if (hdr.classList.contains('status-confirmed')) return 'confirmed';
+        if (hdr.classList.contains('status-delivered')) return 'delivered';
+        return 'other';
+    });
+
+    const pending   = statuses.filter(s => s === 'pending').length;
+    const confirmed = statuses.filter(s => s === 'confirmed').length;
+    const delivered = statuses.filter(s => s === 'delivered').length;
+
+    document.getElementById('pendingCount').innerText   = pending;
+    document.getElementById('confirmedCount').innerText = confirmed;
+    document.getElementById('deliveredCount').innerText = delivered;
+
+    const badge = document.getElementById('pendingBadge');
+    if (pending > 0) { badge.innerText = pending; badge.style.display = 'inline'; }
+    else badge.style.display = 'none';
+});
+</script>
+{% endblock %}

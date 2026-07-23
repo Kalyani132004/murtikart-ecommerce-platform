@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% comment %}
+  base_admin.html - Admin portal base layout
+  All admin pages extend this. Contains the sidebar and top navbar.
+  Child templates only need to fill {% block page_content %}.
+{% endcomment %}
+
+{% load static %}
+
+{% block extra_css %}
+    <style>
+        /* AGGRESSIVE LAYOUT RESET */
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; min-height: 100vh; }
+        
+        .admin-wrapper {
+            display: flex !important;
+            min-height: 100vh !important;
+            width: 100% !important;
+            position: relative !important;
+        }
+
+        #sidebar {
+            width: 260px !important;
+            height: 100vh !important;
+            background: linear-gradient(180deg, #4a0000, #2c0e0e) !important;
+            color: #fff !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 1001 !important;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.3) !important;
+            overflow-y: auto !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #content {
+            flex: 1 !important;
+            margin-left: 260px !important;
+            width: calc(100% - 260px) !important;
+            min-height: 100vh !important;
+            background-color: #fcfaf5 !important;
+            position: relative !important;
+            display: block !important;
+        }
+
+        /* Sidebar Item Styling - Force visibility */
+        .nav-link {
+            color: #fff !important;
+            text-decoration: none !important;
+            padding: 12px 20px !important;
+            display: flex !important;
+            align-items: center !important;
+            border-left: 4px solid transparent !important;
+            font-size: 0.95rem !important;
+        }
+        .nav-link i { width: 25px !important; margin-right: 10px !important; color: #D4AF37 !important; }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1) !important;
+            border-left-color: #D4AF37 !important;
+        }
+
+        @media (max-width: 991px) {
+            #sidebar { left: -260px !important; }
+            #content { margin-left: 0 !important; width: 100% !important; }
+            body.sidebar-toggled #sidebar { left: 0 !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'admin/style.css' %}?v=1.4">
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <div class="sidebar-logo text-center py-4">
+            <img src="{% static 'assets/images/logo.png' %}" alt="MurtiKart Logo"
+                style="height: 70px; width: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));" class="mb-2">
+            <h4 data-i18n="brand_admin" class="mb-0 fw-bold"
+                style="color: #D4AF37; font-family: 'Playfair Display', serif;">Admin Portal</h4>
+        </div>
+       <div class="nav flex-column mt-4">
+    <a href="{% url 'admin_panel:dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+        <i class="fa-solid fa-house"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+    
+    <a href="{% url 'admin_panel:models' %}" class="nav-link {% block nav_models %}{% endblock %}">
+        <i class="fa-solid fa-layer-group"></i> <span data-i18n="nav_manage_models">Manage Models</span></a>
+
+    <a href="{% url 'admin_panel:manage_customer_orders' %}" class="nav-link {% block nav_cust_orders %}{% endblock %}">
+        <i class="fa-solid fa-user-tag"></i> <span>Customer Orders</span></a>
+
+    <a href="{% url 'admin_panel:manage_wholesaler_orders' %}" class="nav-link {% block nav_whole_orders %}{% endblock %}">
+        <i class="fa-solid fa-truck-ramp-box"></i> <span>Wholesaler Orders</span></a>
+
+    <a href="{% url 'admin_panel:customers' %}" class="nav-link {% block nav_customers %}{% endblock %}">
+        <i class="fa-solid fa-users"></i> <span data-i18n="nav_customers">Customers List</span></a>
+
+    <a href="{% url 'admin_panel:wholesalers' %}" class="nav-link {% block nav_wholesalers %}{% endblock %}">
+        <i class="fa-solid fa-shop"></i> <span data-i18n="nav_wholesalers">Wholesalers List</span></a>
+
+    <a href="{% url 'admin_panel:discount_list' %}" class="nav-link {% block nav_discounts %}{% endblock %}">
+        <i class="fa-solid fa-tags"></i> <span data-i18n="nav_discounts">Manage Discounts</span></a>
+
+    <a href="{% url 'admin_panel:invoices' %}" class="nav-link {% block nav_invoices %}{% endblock %}">
+        <i class="fa-solid fa-receipt"></i> <span data-i18n="nav_view_invoices">Invoices</span></a>
+
+    <a href="{% url 'admin_panel:reports' %}" class="nav-link {% block nav_reports %}{% endblock %}">
+        <i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_reports">Reports</span></a>
+
+    <a href="{% url 'admin_panel:settings' %}" class="nav-link {% block nav_settings %}{% endblock %}">
+        <i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></a>
+
+    <hr class="mx-3 border-white-50 opacity-25">
+    
+    <a href="{% url 'auth:logout' %}" class="nav-link text-danger">
+        <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="nav_logout">Logout</span></a>
+</div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div id="content">
+        <!-- TOP NAVBAR -->
+        <div class="top-navbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="sidebar-toggle-btn" id="sidebarToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="fw-bold d-none d-sm-block"
+                    style="color: var(--primary-royal); font-family: 'Playfair Display', serif;">
+                    {% block page_title %}MurtiKart Admin{% endblock %}
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <!-- Language Switcher -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark btn-sm rounded-pill px-3 dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-language me-2"></i>
+                        <span class="currentLangDisplay">English</span>
+                    </button>
+                    <ul class="dropdown-menu border-0 shadow-lg">
+                        <li><a class="dropdown-item" href="#" data-lang-switch="en">English</a></li>
+                        <li><a class="dropdown-item" href="#" data-lang-switch="mr">Marathi (मराठी)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE BODY: Each child template fills this block -->
+        <div class="p-4">
+            {% block page_content %}{% endblock %}
+        </div>
+    </div><!-- end #content -->
+</div>
+{% endblock body %}
+
+{% block extra_scripts %}
+    <script src="{% static 'admin/admin.js' %}"></script>
+    {% block admin_extra_scripts %}{% endblock %}
+{% endblock %}

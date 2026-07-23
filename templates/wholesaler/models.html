@@ -1,0 +1,257 @@
+{% extends 'wholesaler/base_wholesaler.html' %}
+{% load static %}
+
+
+{% block title %}Explore Models - MurtiKart{% endblock %}
+{% block page_title %}Explore Models{% endblock %}
+{% block nav_models %}active{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .model-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(96, 0, 0, 0.05);
+            background: #fff;
+            overflow: hidden;
+            border-radius: 15px !important;
+        }
+        .model-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(96, 0, 0, 0.1) !important;
+        }
+        .model-img-container {
+            height: 250px;
+            background: radial-gradient(circle, #fff 0%, #f9f9f9 70%, #f0f0f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        .model-img-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(transparent, rgba(255,255,255,0.8));
+        }
+        .festive-badge {
+            background: var(--receipt-maroon, #600000);
+            color: #D4AF37;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(96, 0, 0, 0.2);
+        }
+        .category-tab {
+            cursor: pointer;
+            padding: 10px 25px;
+            border-radius: 30px;
+            background: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #eee;
+        }
+        .category-tab.active {
+            background: var(--receipt-maroon, #600000);
+            color: #fff;
+            border-color: var(--receipt-maroon, #600000);
+            box-shadow: 0 5px 15px rgba(96, 0, 0, 0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+            <!-- Category Tabs -->
+            <div class="d-flex gap-3 mb-4 justify-content-center animate-fade">
+                <div class="category-tab active" data-filter="all" data-i18n="option_all_models">All Models</div>
+                <div class="category-tab" data-filter="decorated" data-i18n="option_decorated"><i class="fa-solid fa-crown me-2 text-warning"></i>Decorated</div>
+                <div class="category-tab" data-filter="color" data-i18n="option_color"><i class="fa-solid fa-palette me-2 text-success"></i>Coloring</div>
+            </div>
+
+
+            <!-- Filter & Search Section -->
+            <div class="filter-section mb-5 animate-fade bg-white p-4 rounded-4 shadow-sm border">
+                <div class="row g-4 align-items-end">
+                    <div class="col-lg-4">
+                        <label class="form-label small text-uppercase fw-bold text-muted mb-2 ls-1" data-i18n="label_search" style="font-size: 0.65rem;">Find your Murti</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                            <span class="input-group-text border-0 bg-light"><i class="fa-solid fa-magnifying-glass text-primary"></i></span>
+                            <input type="text" id="custSearch" class="form-control border-0 bg-light ps-0" placeholder="Search name or ID..." data-i18n="ph_search_models">
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label small text-uppercase fw-bold text-muted mb-2 ls-1" data-i18n="label_type" style="font-size: 0.65rem;">Model Type</label>
+                        <select id="custType" class="form-select form-select-lg border-0 bg-light shadow-sm rounded-3">
+                            <option value="" data-i18n="option_all_models">All Types</option>
+                            <option value="Decorated" data-i18n="option_decorated">Decorated</option>
+                            <option value="Color" data-i18n="option_color">Coloring</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label small text-uppercase fw-bold text-muted mb-2 ls-1" data-i18n="label_size_range" style="font-size: 0.65rem;">Height Filter</label>
+                        <select id="custSize" class="form-select form-select-lg border-0 bg-light shadow-sm rounded-3">
+                            <option value="" data-i18n="option_all_sizes">All Sizes</option>
+                            <option value="1-2">1ft - 2ft</option>
+                            <option value="2-3">2ft - 3ft</option>
+                            <option value="3+">Above 3ft</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <button id="applyCustFilters" class="btn btn-primary btn-lg w-100 fw-bold rounded-3 shadow py-2" data-i18n="btn_apply">
+                           <i class="fa-solid fa-filter me-2 small"></i>Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+           
+
+            <!-- Dynamic Models Section -->
+            <div id="modelsGrid" class="row g-4">
+                <!-- Models loaded here -->
+            </div>
+        </div>
+{# Embed server data safely - avoids JS linter issues with Django template tags #}
+<script id="productsData" type="application/json">{{ products_json|safe }}</script>
+
+{% endblock %}
+
+{% block extra_scripts %}
+        <script>
+        const STATIC_URL = "{% static '' %}";
+
+        // Load products data safely from embedded JSON
+        const PRODUCTS_DATA = JSON.parse(document.getElementById('productsData').textContent);
+        function getModels() {
+            return PRODUCTS_DATA;
+        }
+
+        // Render Models
+        // Replace your existing renderModels function with this slightly improved version
+function renderModels(filterObj = {}) {
+    const container = document.getElementById('modelsGrid');
+    if (!container) return;
+
+    const models = getModels();
+    container.innerHTML = '';
+
+    const filtered = models.filter(m => {
+        const matchesSearch = !filterObj.search || 
+            m.name.toLowerCase().includes(filterObj.search.toLowerCase()) || 
+            m.id.toString().toLowerCase().includes(filterObj.search.toLowerCase());
+
+        const matchesType = !filterObj.type || m.type === filterObj.type;
+
+        let matchesSize = true;
+        if (filterObj.size) {
+            if (filterObj.size === '1-2') matchesSize = m.size >= 1 && m.size <= 2;
+            else if (filterObj.size === '2-3') matchesSize = m.size > 2 && m.size <= 3;
+            else if (filterObj.size === '3+') matchesSize = m.size > 3;
+        }
+
+        return matchesSearch && matchesType && matchesSize;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5 animate-fade">
+                <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No models found matching your filters.</h5>
+                <button class="btn btn-outline-primary btn-sm mt-2" onclick="location.reload()">Reset Filters</button>
+            </div>`;
+        return;
+    }
+
+    filtered.forEach(m => {
+        // Ensure image path is correct
+        const imageSrc = m.image.startsWith('http') || m.image.startsWith('/media') 
+                         ? m.image 
+                         : `${STATIC_URL}${m.image}`;
+
+        const card = `
+        <div class="col-xl-4 col-lg-6 col-md-6 animate-fade">
+            <div class="card h-100 model-card border-0 shadow-sm">
+                <div class="model-img-container">
+                    <div class="position-absolute top-0 start-0 p-3" style="z-index: 2;">
+                        <span class="festive-badge">${m.type}</span>
+                    </div>
+                    <img src="${imageSrc}" 
+                        alt="${m.name}" 
+                        style="max-width:85%; max-height:85%; object-fit:contain; z-index: 1; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));"
+                        onerror="this.src='{% static 'assets/images/placeholder.png' %}';">
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="fw-bold mb-2 text-dark" style="font-family: 'Playfair Display', serif; min-height: 3rem;">${m.name}</h5>
+                    <div class="d-flex gap-3 mb-4">
+                        <span class="small text-muted"><i class="fa-solid fa-ruler-vertical me-1 text-primary"></i>${m.size} ft</span>
+                        <span class="small text-muted"><i class="fa-solid fa-circle-check me-1 text-success"></i>Available</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div>
+                            <span class="text-muted small d-block mb-1">Price</span>
+                            <h4 class="text-primary mb-0 fw-bold">₹${m.price.toLocaleString('en-IN')}</h4>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${m.stock > 5 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} rounded-pill px-3 py-2">
+                                Stock: ${m.stock}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pt-0 pb-4 px-4">
+                    <a href="{% url 'wholesaler:book' %}?id=${m.id}" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm py-2">
+                        <i class="fa-solid fa-calendar-plus me-2"></i>Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+        `;
+        container.innerHTML += card;
+    });
+}
+
+        // Category Tab filter (All, Decorated, Color)
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                renderModels({
+                    type: filter === 'all' ? '' : (filter === 'decorated' ? 'Decorated' : 'Color')
+                });
+            });
+        });
+
+        // Apply Filters
+        document.getElementById('applyCustFilters').addEventListener('click', () => {
+            renderModels({
+                search: document.getElementById('custSearch').value,
+                type: document.getElementById('custType').value,
+                size: document.getElementById('custSize').value
+            });
+        });
+
+        // Enter Key Search
+        document.getElementById('custSearch').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                document.getElementById('applyCustFilters').click();
+            }
+        });
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderModels();
+        });
+        </script>
+{% endblock %}

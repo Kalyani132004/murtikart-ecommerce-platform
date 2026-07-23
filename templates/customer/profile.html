@@ -1,0 +1,112 @@
+{% extends 'customer/base_customer.html' %}
+{% load static %}
+
+{% block title %}Profile Settings - MurtiKart{% endblock %}
+{% block page_title %}Profile Settings{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <div class="position-relative d-inline-block mx-auto mb-3 profile-pic-container">
+                    <img id="profile-img-preview" 
+                         src="{% if user.profile_img %}{{ user.profile_img.url }}{% else %}https://ui-avatars.com/api/?name={{ user.full_name|default:user.username }}&background=1a237e&color=fff{% endif %}" 
+                         class="rounded-circle shadow-sm" width="120" height="120" 
+                         style="object-fit: cover; border: 3px solid #fff;">
+                    
+                    <div class="profile-overlay rounded-circle d-flex align-items-center justify-content-center" 
+                         style="cursor: pointer; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); opacity: 0; transition: 0.3s;"
+                         onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                        <i class="fa-solid fa-camera text-white fs-4"></i>
+                    </div>
+                </div>
+
+                <h4 class="fw-bold mb-1">{{ user.full_name|default:user.username }}</h4>
+                <p class="text-muted mb-3">Customer since {{ user.date_joined|date:"Y" }}</p>
+                
+                <button type="button" class="btn btn-outline-primary btn-sm px-4" onclick="document.getElementById('profile-upload').click()">
+                    <i class="fa-solid fa-camera me-2"></i>Change Photo
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 p-4 animate-fade">
+                <h5 class="fw-bold mb-4">Edit Profile Details</h5>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <input type="file" name="profile_pic" id="profile-upload" accept="image/*" class="d-none">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mobile Number</label>
+                            <input type="tel" name="mobile" class="form-control" value="{{ user.mobile }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="dob" class="form-control" value="{{ user.dob|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Residential Address</label>
+                            <textarea name="address" class="form-control" rows="3">{{ user.address }}</textarea>
+                        </div>
+                        <div class="col-md-12 mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-4">Update Profile</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('profile-upload');
+        const previewImg = document.getElementById('profile-img-preview');
+        const overlay = document.querySelector('.profile-overlay');
+
+        // 1. Photo Preview Logic
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 2. Make Overlay Clickable
+        if(overlay) {
+            overlay.addEventListener('click', function() {
+                fileInput.click();
+            });
+        }
+    });
+</script>
+{% endblock %}

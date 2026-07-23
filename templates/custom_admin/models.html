@@ -1,0 +1,250 @@
+{% extends 'custom_admin/base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Manage Models - MurtiKart{% endblock %}
+{% block page_title %}Manage Models{% endblock %}
+{% block nav_models %}active{% endblock %}
+
+{% block page_content %}
+<!-- बटन्सना एका रांगेत आणि उजव्या बाजूला आणण्यासाठी d-flex आणि justify-content-end वापरा -->
+<div class="d-flex justify-content-end gap-2 mb-3">
+    
+    <a href="{% url 'admin_panel:add_model' %}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-plus me-1"></i> 
+        <span data-i18n="btn_add_model">Add Model</span>
+    </a>
+    
+</div>
+            <!-- Filter Bar -->
+<div class="p-4">
+    
+            <div class="row g-3 mb-4 bg-white p-3 rounded shadow-sm align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1" data-i18n="label_search">Search</label>
+                    <input type="text" id="filterSearch" class="form-control" placeholder="Search by name or model..." data-i18n="ph_search_models">
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1" data-i18n="label_type">Type</label>
+                    <select id="filterType" class="form-select">
+                        <option value="" data-i18n="option_all_types">All Types</option>
+                        <option value="Decorated" data-i18n="option_decorated">Decorated</option>
+                        <option value="Color" data-i18n="option_color">Color</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1" data-i18n="label_size_range">Size Range</label>
+                    <select id="filterSize" class="form-select">
+                        <option value="" data-i18n="option_all_sizes">All Sizes</option>
+                        <option value="1-2">1ft - 2ft</option>
+                        <option value="2-4">2ft - 4ft</option>
+                        <option value="4+">Above 4ft</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button id="applyFilters" class="btn btn-primary w-100" data-i18n="btn_apply"><i class="fa-solid fa-filter me-2"></i>Apply</button>
+                </div>
+            </div>
+
+
+            <div class="row g-4" id="modelsContainer">
+                <!-- Models will be loaded dynamically here -->
+            </div>
+        </div>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+    //  Django JSON data
+    const allModels = JSON.parse('{{ all_models_json|escapejs }}');
+
+    //  Convert DB  UI format
+    const defaultModels = [];
+
+    allModels.forEach(item => {
+        let f = item.fields;
+
+        let x = {
+            id: f.model_number,
+            name: f.name,
+            type: f.model_type,
+            size: f.size,
+            price: f.price,
+            stock: f.stock,
+            image: "/media/" + f.image, //  correct path
+            showToCustomer: f.visibility === 'both' || f.visibility === 'customer',
+            showToWholesaler: f.visibility === 'both' || f.visibility === 'wholesaler'
+        };
+
+        defaultModels.push(x);
+    });
+
+    
+
+    // ✅ Always use DB data
+    function getModels() {
+        return defaultModels;
+    }
+
+    function renderModels(filterObj = {}) {
+        const container = document.getElementById('modelsContainer');
+        const models = getModels();
+        container.innerHTML = '';
+
+        const filtered = models.filter(m => {
+            const matchesSearch = !filterObj.search || 
+                m.name.toLowerCase().includes(filterObj.search.toLowerCase()) || 
+                m.id.toLowerCase().includes(filterObj.search.toLowerCase());
+            
+            const matchesType = !filterObj.type || m.type === filterObj.type;
+            
+            let matchesSize = true;
+            if (filterObj.size) {
+                if (filterObj.size === '1-2') matchesSize = m.size >= 1 && m.size <= 2;
+                else if (filterObj.size === '2-4') matchesSize = m.size > 2 && m.size <= 4;
+                else if (filterObj.size === '4+') matchesSize = m.size > 4;
+            }
+
+            return matchesSearch && matchesType && matchesSize;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center py-5"><h5 class="text-muted">No models found matching your filters.</h5></div>';
+            return;
+        }
+
+        filtered.forEach(m => {
+    // update model url create 
+    const updateUrl = `/admin-portal/update-model/${m.id}/`;
+
+    const card = `
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-top border-primary border-3 animate-up">
+                <div style="height: 200px; background: radial-gradient(circle, #ffffff 0%, #f1f1f1 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px;">
+                    <img src="${m.image}" alt="${m.name}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
+                </div>
+
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-light text-primary">#${m.id}</span>
+                        <div class="dropdown">
+                            <button class="btn btn-link btn-sm p-0 text-muted" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <!-- edit and delete section model id pass here -->
+                                <li>
+                                    <a class="dropdown-item small" href="${updateUrl}">
+                                        <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Edit Model
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center py-2 text-danger" href="javascript:void(0)" onclick="deleteModel('${m.id}')">
+                                        <div class="bg-danger-subtle rounded-circle p-1 me-3 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                            <i class="fa-solid fa-trash text-danger" style="font-size: 12px;"></i>
+                                        </div>
+                                        <span class="small fw-medium">Delete Model</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h5 class="card-title h6 mb-1">${m.name}</h5>
+                    <p class="small text-muted mb-3">${m.type} | ${m.size}ft</p>
+
+                    <div class="bg-light p-2 rounded mb-3">
+                        <label class="small fw-bold text-muted d-block mb-2 text-uppercase" style="font-size: 0.65rem;">Visibility</label>
+                        
+                        <div class="form-check form-switch small mb-1">
+                                <input class="form-check-input" type="checkbox" 
+                                    ${m.showToCustomer ? 'checked' : ''} 
+                                    onclick="visibilitycheckfunc('customer', '${m.id}',this) ">
+                                <label class="form-check-label">Customer</label>
+                        </div>
+
+                        <div class="form-check form-switch small">
+                                <input class="form-check-input" type="checkbox" 
+                                    ${m.showToWholesaler ? 'checked' : ''} 
+                                    onclick="visibilitycheckfunc('wholesaler', '${m.id}',this) ">
+                                <label class="form-check-label">Wholesaler</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="text-primary mb-0">₹${m.price}</h5>
+                        <span class="badge ${m.stock > 5 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} border">
+                            Stock: ${m.stock}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML += card;
+});
+    }
+
+    document.getElementById('applyFilters').addEventListener('click', () => {
+        renderModels({
+            search: document.getElementById('filterSearch').value,
+            type: document.getElementById('filterType').value,
+            size: document.getElementById('filterSize').value
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderModels();
+    });
+    function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    function visibilitycheckfunc(role, modelid, element) {
+        const isChecked = element.checked; // Get true/false from switch
+
+        fetch("http://127.0.0.1:8000/admin-portal/api/visibility/check/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'role': role,        // 'customer' or 'wholesaler'
+                'modelid': modelid,
+                'is_checked': isChecked // true or false
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.msg) {
+                console.log(data.msg);
+            } else {
+                alert("Error occurred, try again");
+                element.checked = !isChecked; // Revert switch on error
+            }
+        });
+    }
+    function deleteModel(id) {
+    if (confirm('Are you sure you want to delete this model?')) {
+        // create dynamic form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin-portal/delete-model/${id}/`; // delete model path
+        
+        // CSRF Token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}'; // such is .html then required to add csrf_token
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}       
+</script>
+{% endblock %}
+

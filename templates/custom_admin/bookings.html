@@ -1,0 +1,93 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block title %}Bookings - MurtiKart{% endblock %}
+{% block page_title %}Bookings{% endblock %}
+{% block nav_bookings %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <div class="table-container shadow-sm bg-white rounded">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th data-i18n="th_booking_id">ID</th>
+                        <th data-i18n="th_type">User Type</th>
+                        <th data-i18n="th_customer_name">Customer & Mobile</th>
+                        <th data-i18n="th_model_name">Model</th>
+                        <th data-i18n="th_total_amount">Total (₹)</th>
+                        <th>Paid</th>
+                        <th>Pending</th>
+                        <th>Date</th>
+                        <th data-i18n="th_status">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="bookingsTableBody">
+                    {% for booking in bookings %}
+                    <tr>
+                        <td class="fw-bold text-primary">#{{ booking.id }}</td>
+                        
+                        <td>
+                            {% if booking.user.role == 'wholesaler' %}
+                                <span class="badge bg-info text-dark">Wholesaler</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Customer</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            <div class="fw-bold">{{ booking.user.full_name }}</div>
+                            <div class="small text-muted">{{ booking.user.mobile|default:"-" }}</div>
+                        </td>
+                        
+                        <td>
+                            {% for item in booking.items.all %}
+                                {{ item.product.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                <span class="text-muted italic">No items</span>
+                            {% endfor %}
+                        </td>
+                        
+                        <td>₹{{ booking.total_amount }}</td>
+                        <td class="text-success">₹{{ booking.paid_amount }}</td>
+                        <td class="text-danger fw-bold">
+                            {# Using the property if you added it to models.py, otherwise simple math: #}
+                            
+                            ₹{{ booking.total_amount|subtract:booking.paid_amount }}
+
+                            {% comment %} 
+                                Note: If you add 'def balance(self): return self.total_amount - self.paid_amount' 
+                                to your Order model, use {{ booking.balance }} here instead.
+                            {% endcomment %}
+                        </td>
+                        
+                        <td>{{ booking.date|date:"d M Y" }}</td>
+                        
+                        <td>
+                            <span class="badge 
+                                {% if booking.status == 'confirmed' %}bg-success
+                                {% elif booking.status == 'pending' %}bg-warning text-dark
+                                {% elif booking.status == 'delivered' %}bg-primary
+                                {% elif booking.status == 'cancelled' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-folder-open d-block fs-2 mb-2"></i>
+                            No bookings found in the database.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

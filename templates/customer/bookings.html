@@ -1,0 +1,85 @@
+{% extends 'customer/base_customer.html' %}
+{% load static %}
+
+{% block title %}My Bookings - MurtiKart{% endblock %}
+{% block page_title %}My Bookings{% endblock %}
+{% block nav_bookings %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+            <div class="table-container animate-fade shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Model Name</th>
+                                <th>Quantity</th>
+                                <th>Total Amount</th>
+                                <th>Advance Paid</th>
+                                <th>Pending Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>#BK-{{ order.id }}</td>
+        
+        <td>
+            {% with items=order.orderitem_set.all|default:order.items.all %}
+                {% for item in items %}
+                    <div>{{ item.product.name }}</div>
+                {% empty %}
+                    <span class="text-muted">N/A</span>
+                {% endfor %}
+            {% endwith %}
+        </td>
+
+        <td>
+            {% with items=order.orderitem_set.all|default:order.items.all %}
+                {% for item in items %}
+                    <span class="badge bg-info text-dark">x{{ item.quantity }}</span>
+                {% empty %}
+                    0
+                {% endfor %}
+            {% endwith %}
+        </td>
+
+        <td>₹{{ order.total_amount|floatformat:2 }}</td>
+        <td class="text-success">₹{{ order.paid_amount|floatformat:2 }}</td>
+        
+        <td class="{% if order.payment.pending > 0 %}text-danger{% else %}text-success{% endif %}">
+            ₹{{ order.payment.pending|floatformat:2 }}
+        </td>
+
+        <td>
+            {% if order.status == 'pending' %}
+                <span class="badge badge-pending rounded-pill px-3">Pending</span>
+            {% elif order.status == 'confirmed' %}
+                <span class="badge badge-confirmed rounded-pill px-3">Confirmed</span>
+            {% elif order.status == 'delivered' %}
+                <span class="badge badge-delivered rounded-pill px-3">Delivered</span>
+            {% else %}
+                <span class="badge bg-secondary rounded-pill px-3">{{ order.status|title }}</span>
+            {% endif %}
+        </td>
+
+        <td>
+            <a href="{% url 'customer:invoices' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fa-solid fa-receipt me-1"></i> Invoice
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="8" class="text-center py-4 text-muted">No bookings found in your account.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}

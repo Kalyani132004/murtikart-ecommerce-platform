@@ -1,0 +1,150 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+
+{% block title %}Add Model - MurtiKart{% endblock %}
+{% block page_title %}Add Model{% endblock %}
+{% block nav_models %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+            <div class="card shadow-sm border-0 max-width-800 mx-auto" style="max-width: 800px;">
+                <div class="card-body p-5">
+                    <form id="addModelForm">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Model Number</label>
+                                <input type="text" id="modelNumber" class="form-control" placeholder="e.g. MK-108" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Model Name</label>
+                                <input type="text" id="modelName" class="form-control" placeholder="e.g. Lalbaug King" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Model Type</label>
+                                <select id="modelType" class="form-select" required>
+                                    <option value="" disabled selected>Select type...</option>
+                                    <option value="decorated">Decorated</option>
+                                    <option value="color">Color</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Size (in Feet)</label>
+                                <input type="number" id="modelSize" step="0.5" class="form-control" placeholder="e.g. 2.5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Price (₹)</label>
+                                <input type="number" id="modelPrice" class="form-control" placeholder="0.00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Stock Quantity</label>
+                                <input type="number" id="modelStock" class="form-control" placeholder="0" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Select Model Photo</label>
+                                <input type="file" id="modelImageFile" class="form-control" accept="image/*" required>
+                                <div id="imagePreview" class="mt-3 d-none">
+                                    <img src="" alt="Preview" class="img-thumbnail" style="height: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-12 bg-light p-3 rounded-3">
+                                <label class="form-label fw-bold mb-3 d-block"><i class="fa-solid fa-eye me-2"></i>Visibility Settings</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="showToCustomer" checked>
+                                        <label class="form-check-label fw-semibold" for="showToCustomer">Show to Customers</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="showToWholesaler" checked>
+                                        <label class="form-check-label fw-semibold" for="showToWholesaler">Show to Wholesalers</label>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-2">Control which user types can see and book this model.</small>
+                            </div>
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold">
+                                    <i class="fa-solid fa-save me-2"></i> Save Model Details
+                                </button>
+                                <a href="{% url 'admin_panel:models' %}" class="btn btn-light border px-5 py-3 rounded-pill ms-2 fw-bold">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block admin_extra_scripts %}
+<script>
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        document.getElementById('modelImageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const previewDiv = document.getElementById('imagePreview');
+                previewDiv.classList.remove('d-none');
+                previewDiv.querySelector('img').src = URL.createObjectURL(file);
+            }
+        });
+
+        document.getElementById('addModelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+
+            formData.append('model_number', document.getElementById('modelNumber').value);
+            formData.append('name', document.getElementById('modelName').value);
+            formData.append('model_type', document.getElementById('modelType').value);
+            formData.append('size', document.getElementById('modelSize').value);
+            formData.append('price', document.getElementById('modelPrice').value);
+            formData.append('stock', document.getElementById('modelStock').value);
+
+            // image
+            const fileInput = document.getElementById('modelImageFile');
+            formData.append('image', fileInput.files[0]);
+            
+
+            // 🔥 visibility logic
+            const customer = document.getElementById('showToCustomer').checked;
+            const wholesaler = document.getElementById('showToWholesaler').checked;
+
+            let visibility = '';
+
+            if (customer && wholesaler) {
+                visibility = 'both';
+            } else if (customer) {
+                visibility = 'customer';
+            } else if (wholesaler) {
+                visibility = 'wholesaler';
+            }
+
+            formData.append('visibility', visibility);
+            
+            fetch("http://127.0.0.1:8000/admin-portal/api/add/models/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                },
+                body: formData   //not content manuaaly set
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data){
+                    alert(data.msg);
+                }else{
+                    alert("Error occured try again")
+                }
+                
+            });
+        });
+
+        // Sidebar logic from script.js
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+        });
+</script>
+{% endblock %}

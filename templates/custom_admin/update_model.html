@@ -1,0 +1,127 @@
+{% extends 'custom_admin/base_admin.html' %}
+{% load static %}
+
+{% block page_content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header with Gradient -->
+                <div class="card-header bg-primary py-3 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle p-2 me-3 shadow-sm">
+                            <i class="fa-solid fa-pen-to-square text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold text-white">Update Model Details</h5>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4">
+                            <!-- Left Column: Image Preview -->
+                            <div class="col-md-4 text-center border-end d-flex flex-column align-items-center justify-content-center">
+                                <label class="form-label fw-bold d-block mb-3">Current Image</label>
+                                <div class="position-relative" style="width: 200px; height: 200px; background: #f8f9fa; border-radius: 15px; border: 2px dashed #dee2e6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    {% if product.image %}
+                                        <img id="imgPreview" src="{{ product.image.url }}" alt="Model Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    {% else %}
+                                        <i class="fa-solid fa-image text-muted fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="small text-muted mt-2">Resolution: Premium Quality</p>
+                            </div>
+
+                            <!-- Right Column: Form Fields -->
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <!-- Model Number -->
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-bold text-dark small text-uppercase">Model Number / Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                                            <input type="text" name="model_number" class="form-control border-start-0 ps-0" value="{{ product.model_number }}" placeholder="Ex: M102-Premium" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-dark small text-uppercase">Price (₹)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-indian-rupee-sign text-muted"></i></span>
+                                            <input type="number" name="price" class="form-control border-start-0 ps-0" value="{{ product.price }}" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stock -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-dark small text-uppercase">Current Stock</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-boxes-stacked text-muted"></i></span>
+                                            <input type="number" name="stock" class="form-control border-start-0 ps-0" value="{{ product.stock }}" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Image Update -->
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-bold text-dark small text-uppercase">Replace Image</label>
+                                        <input type="file" name="image" id="imageInput" class="form-control" onchange="previewImage(this)">
+                                        <div id="fileHelp" class="form-text">Upload JPG, PNG or WebP. Leave blank to keep current.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-50">
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="{% url 'admin_panel:models' %}" class="btn btn-light px-4 border">
+                                <i class="fa-solid fa-xmark me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="fa-solid fa-check-double me-1"></i> Update Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Script -->
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+<style>
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: none;
+    }
+    .input-group-text {
+        color: #6c757d;
+    }
+    .card {
+        transition: transform 0.2s ease;
+    }
+    /* Simple animation for better feel */
+    .container {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

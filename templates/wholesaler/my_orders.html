@@ -1,0 +1,131 @@
+{% extends 'wholesaler/base_wholesaler.html' %}
+{% load static %}
+
+{% block title %}My Purchase Orders - MurtiKart{% endblock %}
+{% block page_title %}Order History{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid p-4">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3 rounded-4 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="small opacity-75 mb-1">Total Orders</p>
+                        <h2 class="fw-bold mb-0">{{ orders.count }}</h2>
+                    </div>
+                    <i class="fa-solid fa-cart-shopping fs-1 opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i>Purchase History</h5>
+            <div class="input-group w-auto">
+                <input type="text" class="form-control form-control-sm" placeholder="Search Order ID..." id="orderSearch">
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Order ID</th>
+                            <th>Date</th>
+                            <th>Murtis Details</th>
+                            <th>Payment Info</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-bold text-primary">#MK-{{ order.id }}</span>
+                            </td>
+                            <td>
+                                <div class="small fw-semibold text-dark">{{ order.date|date:"d M, Y" }}</div>
+                                <div class="x-small text-muted">{{ order.date|time:"H:i A" }}</div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    {% for item in order.items.all %}
+                                    <span class="badge bg-light text-dark border text-start fw-normal">
+                                        <i class="fa-solid fa-om me-1 text-primary"></i>
+                                        {{ item.product.name }} ({{ item.quantity }} नग)
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small mb-1">Total: <strong>₹{{ order.total_amount }}</strong></div>
+                                <div class="progress" style="height: 5px; width: 100px;">
+                                    {% widthratio order.paid_amount order.total_amount 100 as percent %}
+                                    <div class="progress" style="height: 5px; width: 100px;">
+                                        <div class="progress-bar bg-success" 
+                                            role="progressbar" 
+                                            style="width: {{ percent }}%" 
+                                            aria-valuenow="{{ percent }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="x-small text-success mt-1">Paid: {{ percent }}%</div>
+                                </div>
+                                <div class="x-small text-success mt-1">Paid: ₹{{ order.paid_amount }}</div>
+                            </td>
+                            <td>
+                                {% if order.status == 'pending' %}
+                                    <span class="badge rounded-pill bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Pending</span>
+                                {% elif order.status == 'completed' %}
+                                    <span class="badge rounded-pill bg-success"><i class="fa-solid fa-circle-check me-1"></i> Completed</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-info text-white"><i class="fa-solid fa-truck-fast me-1"></i> Processing</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'wholesaler:invoices' %}#receipt-{{ order.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fa-solid fa-file-invoice me-1"></i> View Invoice
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <img src="{% static 'img/no-orders.svg' %}" alt="" style="width: 100px;" class="mb-3 opacity-50">
+                                <p class="text-muted">You haven't placed any orders yet.</p>
+                                <a href="{% url 'wholesaler:shop' %}" class="btn btn-primary">Start Shopping</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        color: #6c757d;
+        border-bottom-width: 1px;
+    }
+    .x-small { font-size: 0.75rem; }
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.02);
+        transition: 0.3s;
+    }
+    .badge { font-weight: 600; padding: 0.5em 0.8em; }
+</style>
+{% endblock %}

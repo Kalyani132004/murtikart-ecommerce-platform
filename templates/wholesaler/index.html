@@ -1,0 +1,115 @@
+{% extends 'wholesaler/base_wholesaler.html' %}
+{% load static %}
+
+{% block title %}Dashboard - MurtiKart{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block page_content %}
+<div class="p-4">
+    <div class="mb-4">
+        <h2 class="festive-font mb-1">Welcome back, {{ request.user.full_name|default:request.user.username }}!</h2>
+        <p class="text-muted">Manage your Ganpati bookings and explore new models.</p>
+    </div>
+
+    <h4 class="mb-4" data-i18n="partner_overview">Partner Overview</h4>
+
+    <div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-primary border-4 rounded-bottom">
+                <div class="icon-box bg-primary-subtle text-primary rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-truck-fast fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Total Orders</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ total_orders }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-success border-4 rounded-bottom">
+                <div class="icon-box bg-success-subtle text-success rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-om fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Available Models</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ available_models }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-danger border-4 rounded-bottom">
+                <div class="icon-box bg-danger text-white rounded-3 p-2 d-inline-block mb-3 shadow-sm">
+                    <i class="fa-solid fa-receipt fs-4"></i>
+                </div>
+                <br>
+                <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;">Pending Payments</small>
+                <h3 class="fw-bold mb-0 mt-1 text-danger">₹{{ pending_payment }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: #fff;">
+            <div class="card-body p-4 border-bottom border-warning border-4 rounded-bottom">
+                <div class="icon-box bg-warning-subtle text-warning rounded-3 p-2 d-inline-block mb-3">
+                    <i class="fa-solid fa-star fs-4"></i>
+                </div>
+                <br>
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Discount Offer</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ discount_text }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="table-container animate-fade shadow-sm p-4 bg-white rounded">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0" data-i18n="recent_bulk_orders">Recent Bulk Orders</h5>
+            <a href="{% url 'wholesaler:orders' %}" class="btn btn-sm btn-outline-primary" data-i18n="view_history">View History</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th data-i18n="th_booking_id">Order ID</th>
+                        <th data-i18n="th_items">Items</th>
+                        <th data-i18n="th_total_amount">Total Amount</th>
+                        <th data-i18n="th_status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td>#MK-{{ order.id }}</td>
+                        <td>
+                            {% for item in order.items.all|slice:":1" %}
+                                {{ item.product.name }} {% if order.items.count > 1 %}(+{{ order.items.count|add:"-1" }} more){% endif %}
+                            {% endfor %}
+                        </td>
+                        <td class="fw-bold">₹{{ order.total_amount }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <span class="badge bg-info rounded-pill px-3">Pending</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="badge bg-success rounded-pill px-3">Delivered</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3">{{ order.status|title }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No orders found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

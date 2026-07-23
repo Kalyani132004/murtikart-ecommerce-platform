@@ -1,0 +1,142 @@
+{% extends 'wholesaler/base_wholesaler.html' %}
+{% load static %}
+
+{% block title %}My Orders - MurtiKart{% endblock %}
+{% block page_title %}My Orders{% endblock %}
+{% block nav_orders %}active{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .order-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.07);
+        margin-bottom: 20px;
+        transition: box-shadow 0.2s;
+    }
+    .order-card:hover { box-shadow: 0 6px 25px rgba(0,0,0,0.12); }
+    .order-card-header {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    .status-draft       { background: #f5f5f5; color: #666; border: 1px solid #ddd; }
+    .status-pending   { background: #fff8e1; color: #e65100; border: 1px solid #ffcc80; }
+    .status-confirmed { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .status-delivered { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+    .status-cancelled { background: #fce4ec; color: #c62828; border: 1px solid #f48fb1; }
+    .order-items-table th { font-size: 0.72rem; text-transform: uppercase; color: #888; font-weight: 600; }
+    .order-items-table td { font-size: 0.82rem; vertical-align: middle; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 3rem; color: #ddd; margin-bottom: 15px; }
+    .btn-edit-order {
+        background: #600000;
+        color: #D4AF37;
+        border: none;
+        border-radius: 50px;
+        padding: 5px 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-edit-order:hover { background: #800000; color: #fff; }
+    .order-meta { font-size: 0.78rem; color: #888; }
+    .total-chip {
+        background: #600000;
+        color: #D4AF37;
+        border-radius: 50px;
+        padding: 4px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="p-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="fw-bold mb-1" style="font-family:'Playfair Display',serif; color:#600000;">
+                <i class="fa-solid fa-boxes-stacked me-2"></i>My Submitted Orders
+            </h5>
+            <p class="text-muted small mb-0">Track all your submitted orders and drafts.</p>
+        </div>
+        <a href="{% url 'wholesaler:invoices' %}" class="btn rounded-pill px-4 fw-bold"
+            style="background:#600000; color:#D4AF37; border:none;">
+            <i class="fa-solid fa-plus me-2"></i>New Order
+        </a>
+    </div>
+
+    {% if orders %}
+    {% for order in orders %}
+    <div class="order-card">
+        <div class="order-card-header {% if order.status == 'draft' %}bg-light-subtle
+            {% elif order.status == 'pending' %}bg-warning-subtle
+            {% elif order.status == 'confirmed' %}bg-success-subtle
+            {% elif order.status == 'delivered' %}bg-info-subtle
+            {% else %}bg-light{% endif %}">
+            <div class="d-flex align-items-center gap-3">
+                <div>
+                    <a href="{% url 'wholesaler:edit_order' order.id %}" class="fw-bold text-decoration-none" style="font-family:'Playfair Display',serif; color:#600000;">
+                        <i class="fa-solid fa-receipt me-2 text-warning"></i>
+                        Order #{{ order.id }}
+                    </a>
+                    <div class="order-meta mt-1">
+                        <i class="fa-regular fa-clock me-1"></i>{{ order.date|date:"d M Y, h:i A" }}
+                        {% if order.delivery_address %}
+                        &nbsp;•&nbsp;
+                        <i class="fa-solid fa-note-sticky me-1 text-warning"></i>
+                        {{ order.delivery_address|truncatechars:50 }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-badge status-{{ order.status }}">
+                        {% if order.status == 'draft' %}<i class="fa-solid fa-file-pen me-1"></i>
+                        {% elif order.status == 'pending' %}<i class="fa-solid fa-clock me-1"></i>
+                        {% elif order.status == 'confirmed' %}<i class="fa-solid fa-check me-1"></i>
+                        {% elif order.status == 'delivered' %}<i class="fa-solid fa-truck me-1"></i>
+                        {% else %}<i class="fa-solid fa-xmark me-1"></i>{% endif %}
+                        {{ order.status|title }}
+                    </span>
+                    <span class="total-chip">₹{{ order.total_amount|floatformat:0 }}</span>
+                    
+                    <a href="{% url 'wholesaler:edit_order' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                        <i class="fa-solid fa-file-invoice me-1"></i>View Bill
+                    </a>
+
+                    {% if order.status == 'pending' or order.status == 'draft' %}
+                    <a href="{% url 'wholesaler:edit_order' order.id %}" class="btn-edit-order">
+                        <i class="fa-solid fa-pen-to-square me-1"></i>Edit
+                    </a>
+                    {% endif %}
+                </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-box-open d-block"></i>
+        <h6 class="text-muted mt-2">No Orders Yet</h6>
+        <p class="text-muted small">You haven't submitted any orders. Place your first order now!</p>
+        <a href="{% url 'wholesaler:invoices' %}" class="btn rounded-pill px-5 fw-bold mt-2"
+            style="background:#600000; color:#D4AF37; border:none;">
+            <i class="fa-solid fa-cart-shopping me-2"></i>Place Order
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
