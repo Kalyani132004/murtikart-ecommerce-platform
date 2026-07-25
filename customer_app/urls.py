@@ -4,6 +4,7 @@ from . import views
 from .backend import dashboard,models,book,bookings,invoices,profile,offers
 
 urlpatterns = [
+    
     path('',          dashboard.dashboard, name='dashboard'),
     path('models/',   models.models,    name='models'),
      #validation and confirm order code 
