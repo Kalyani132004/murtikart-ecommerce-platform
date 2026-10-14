@@ -3,7 +3,9 @@ from admin_app.models import Product, Order, OrderItem, Payment, Invoice, User
 
 from django.db.models import Sum, F
 from django.contrib.auth.decorators import login_required
+from murtikart_project.decorators import role_required
 
+@role_required('admin')
 @login_required
 def dashboard(request):
     # without admin all users count 

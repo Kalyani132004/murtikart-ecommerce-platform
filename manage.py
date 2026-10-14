@@ -4,11 +4,10 @@ import os
 import sys
 from murtikart_project import VERSION
 from django.core.management.base import BaseCommand
-#set the project version at manually 
-from murtikart_project import VERSION #main folder 
+
+#set the project version at manually  
 class Command(BaseCommand):
     help = 'Displays the current application version'
-
     def handle(self, *args, **options):
         self.stdout.write(f"Application Version: {VERSION}")
         

@@ -6,36 +6,44 @@ from django.utils import timezone
 from datetime import timedelta
 from django.shortcuts import render
 from admin_app.models import Order, Product,OrderItem
+from murtikart_project.decorators import role_required
+from django.contrib.auth.decorators import login_required
 
+@role_required('admin')
+@login_required
 def reports(request):
-    # daily bookings 7 days 
+    # base queryset — exclude non-real orders (draft + unpaid/abandoned)
+    valid_orders = Order.objects.exclude(status__in=['draft', 'pending_payment'])
+
+    # daily bookings 7 days
     last_7_days = timezone.now() - timedelta(days=6)
-    daily_data = Order.objects.filter(date__gte=last_7_days)\
+    daily_data = valid_orders.filter(date__gte=last_7_days)\
         .annotate(day=TruncDate('date'))\
         .values('day')\
         .annotate(count=Count('id'))\
         .order_by('day')
-    
+
     booking_labels = [d['day'].strftime('%a') for d in daily_data]
     booking_counts = [d['count'] for d in daily_data]
 
-    # most popular module top 5
-    popular_models = OrderItem.objects.values('product__name')\
+    # most popular model top 5 — only count items from valid orders
+    popular_models = OrderItem.objects.filter(order__in=valid_orders)\
+        .values('product__name')\
         .annotate(total_sold=Sum('quantity'))\
         .order_by('-total_sold')[:5]
     popular_labels = [p['product__name'] for p in popular_models]
     popular_counts = [p['total_sold'] for p in popular_models]
 
     # monthly revenue
-    monthly_data = Order.objects.annotate(month=TruncMonth('date'))\
+    monthly_data = valid_orders.annotate(month=TruncMonth('date'))\
         .values('month')\
         .annotate(total_revenue=Sum('total_amount'))\
         .order_by('month')
     revenue_labels = [m['month'].strftime('%b') for m in monthly_data]
     revenue_counts = [float(m['total_revenue']) for m in monthly_data]
 
-    # financial summury total paid, pending 
-    financials = Order.objects.aggregate(
+    # financial summary
+    financials = valid_orders.aggregate(
         total=Sum('total_amount'),
         paid=Sum('paid_amount')
     )
@@ -43,13 +51,13 @@ def reports(request):
     total_paid = financials['paid'] or 0
     total_pending = total_rev - total_paid
 
-    # inventry alerts (Low Stock < 10)
+    # inventory alerts — unaffected, stock isn't order-status dependent
     low_stock_items = Product.objects.filter(stock__lt=10).order_by('stock')
 
-    # role wise salers (Wholesaler vs Customer)
-    role_data = Order.objects.values('user__role')\
+    # role-wise sales
+    role_data = valid_orders.values('user__role')\
         .annotate(total=Sum('total_amount'))
-    role_labels = [r['user__role'].capitalize() for r in role_data]
+    role_labels = [r['user__role'].capitalize() if r['user__role'] else 'Unknown' for r in role_data]
     role_values = [float(r['total']) for r in role_data]
 
     context = {

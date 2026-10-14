@@ -15,7 +15,8 @@ urlpatterns = [
     path('offers/',   offers.offers,    name='offers'),
     path('profile/',  profile.profile,   name='profile'), 
     #book validation api
-    path('api/book/validation/', book.check_validation, name='booking_validation')
+    path('api/book/validation/', book.check_validation, name='booking_validation'),
+    path('book/verify-payment/', book.verify_payment, name='verify_payment'),
 ]
 
 # urlpatterns = [

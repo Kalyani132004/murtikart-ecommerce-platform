@@ -1,6 +1,10 @@
 from admin_app.models import Product
 from django.shortcuts import render
+from murtikart_project.decorators import role_required
+from django.contrib.auth.decorators import login_required
 
+@role_required('admin')
+@login_required
 def billing(request):
     if request.method == 'POST':
         import json

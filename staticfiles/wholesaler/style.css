@@ -1,0 +1,140 @@
+:root {
+    --wholesale-sidebar-bg: #4a0000;
+    --wholesale-accent: #D4AF37;
+    --decorated-border: #D4AF37;
+    --color-border: #e0e0e0;
+}
+
+/* Sidebar Customization for Wholesaler */
+#sidebar {
+    background: linear-gradient(180deg, var(--wholesale-sidebar-bg), #2c0e0e);
+}
+
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--wholesale-accent);
+    border-left: 4px solid var(--wholesale-accent);
+}
+
+/* Card Styles */
+.card-decorated {
+    border: 2px solid var(--decorated-border) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-decorated::after {
+    content: 'Decorated Model';
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    background: var(--decorated-border);
+    color: #000;
+    padding: 5px 40px;
+    transform: rotate(45deg);
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.card-color {
+    border: 1px solid var(--color-border) !important;
+}
+
+.badge-low-stock {
+    background-color: #dc3545;
+    animation: pulse 2s infinite;
+}
+/* Traditional Billing Styles */
+.receipt-container {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ffccb3;
+    color: #333;
+    font-family: 'Mukta', sans-serif;
+}
+
+.receipt-header {
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+}
+
+.shop-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #000;
+    font-family: 'Mukta', sans-serif;
+}
+
+.header-meta { font-size: 0.9rem; font-weight: 500; }
+
+.receipt-table {
+    border: 1.5px solid #333 !important;
+}
+
+.receipt-table th, .receipt-table td {
+    border: 1px solid #333 !important;
+    padding: 3px 8px !important;
+    font-size: 0.85rem;
+}
+
+.receipt-table thead { background: #f8f8f8; }
+
+.qty-input {
+    width: 60px;
+    border: none;
+    border-bottom: 1px dashed #ccc;
+    text-align: center;
+}
+
+.qty-input:focus { outline: none; border-bottom: 1px solid #800000; }
+
+.customer-detail-field {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    font-weight: 600;
+}
+
+.customer-detail-field:focus { outline: none; border-bottom: 1.5px solid #800000; }
+
+.model-hover-container {
+    position: relative;
+    cursor: help;
+}
+
+.model-preview {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    width: 150px;
+    border: 2px solid #D4AF37;
+    border-radius: 8px;
+    top: -160px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.model-hover-container:hover .model-preview { display: block; }
+
+.saffron-badge { background-color: #FF9933; color: #fff; }
+
+.highlight-row { background-color: #fff9e6; }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Bulk Order Form */
+.bulk-order-summary {
+    background-color: #fff9e6;
+    border: 1px dashed var(--wholesale-accent);
+    padding: 20px;
+    border-radius: 10px;
+}

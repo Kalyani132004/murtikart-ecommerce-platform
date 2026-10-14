@@ -7,7 +7,7 @@
 {% block nav_models %}active{% endblock %}
 
 {% block page_content %}
-<!-- बटन्सना एका रांगेत आणि उजव्या बाजूला आणण्यासाठी d-flex आणि justify-content-end वापरा -->
+
 <div class="d-flex justify-content-end gap-2 mb-3">
     
     <a href="{% url 'admin_panel:add_model' %}" class="btn btn-primary btn-sm">
@@ -204,7 +204,7 @@
     function visibilitycheckfunc(role, modelid, element) {
         const isChecked = element.checked; // Get true/false from switch
 
-        fetch("http://127.0.0.1:8000/admin-portal/api/visibility/check/", {
+        fetch("{% url 'admin_panel:visibility_check' %}", {
             method: "POST",
             headers: {
                 "X-CSRFToken": getCSRFToken(),

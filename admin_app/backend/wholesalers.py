@@ -2,7 +2,11 @@ from admin_app.models import Order, User, Payment,Product,OrderItem
 from django.shortcuts import redirect,render, get_object_or_404
 import json
 from django.http import JsonResponse
+from murtikart_project.decorators import role_required
+from django.contrib.auth.decorators import login_required
 
+@role_required('admin')
+@login_required
 def wholesalers(request):
     if request.method == 'POST':
         order_id = request.POST.get('order_id')

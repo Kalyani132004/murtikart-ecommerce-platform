@@ -6,79 +6,94 @@
 {% block nav_models %}active{% endblock %}
 
 {% block extra_css %}
-    {{ block.super }}
-    <style>
-        .booking-card {
-            border: 1px solid rgba(96, 0, 0, 0.05);
-            border-radius: 20px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-        .order-summary-card {
-            background: linear-gradient(135deg, var(--receipt-maroon, #600000) 0%, #800000 100%);
-            color: #fff;
-            border-radius: 20px !important;
-            border: none;
-            position: sticky;
-            top: 20px;
-        }
-        .order-summary-card h5, .order-summary-card .text-primary {
-            color: #D4AF37 !important;
-        }
-        .order-summary-card .border-top {
-            border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
-        }
-        .form-control, .form-select {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 1px solid #eee;
-            background-color: #fcfcfc;
-            transition: all 0.2s;
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #fff;
-            border-color: var(--receipt-maroon, #600000);
-            box-shadow: 0 0 0 0.25rem rgba(96, 0, 0, 0.05);
-        }
-        .form-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #555;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .readonly-field {
-            background-color: #f8f9fa !important;
-            border-color: #eee !important;
-            color: #666 !important;
-            font-weight: 600;
-        }
-        .btn-pay {
-            background: linear-gradient(to right, var(--receipt-maroon, #600000), #800000);
-            border: none;
-            box-shadow: 0 10px 20px rgba(96, 0, 0, 0.2);
-            transition: all 0.3s;
-        }
-        .btn-pay:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(96, 0, 0, 0.3);
-            filter: brightness(1.1);
-        }
-    </style>
+{{ block.super }}
+<style>
+    .booking-card {
+        border: 1px solid rgba(96, 0, 0, 0.05);
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .order-summary-card {
+        background: linear-gradient(135deg, var(--receipt-maroon, #600000) 0%, #800000 100%);
+        color: #fff;
+        border-radius: 20px !important;
+        border: none;
+        position: sticky;
+        top: 20px;
+    }
+
+    .order-summary-card h5,
+    .order-summary-card .text-primary {
+        color: #D4AF37 !important;
+    }
+
+    .order-summary-card .border-top {
+        border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #eee;
+        background-color: #fcfcfc;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: #fff;
+        border-color: var(--receipt-maroon, #600000);
+        box-shadow: 0 0 0 0.25rem rgba(96, 0, 0, 0.05);
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #555;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .readonly-field {
+        background-color: #f8f9fa !important;
+        border-color: #eee !important;
+        color: #666 !important;
+        font-weight: 600;
+    }
+
+    .btn-pay {
+        background: linear-gradient(to right, var(--receipt-maroon, #600000), #800000);
+        border: none;
+        box-shadow: 0 10px 20px rgba(96, 0, 0, 0.2);
+        transition: all 0.3s;
+    }
+
+    .btn-pay:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(96, 0, 0, 0.3);
+        filter: brightness(1.1);
+    }
+</style>
 {% endblock %}
 
 {% block page_content %}
+
 <div class="p-4">
     <div class="row g-4">
         <div class="col-lg-8 animate-fade">
             <div class="card shadow-sm border-0 p-4 booking-card">
-                <h4 class="festive-font mb-4 text-primary"><i class="fa-solid fa-feather-pointed me-2"></i>Booking Details</h4>
+                <h4 class="festive-font mb-4 text-primary"><i class="fa-solid fa-feather-pointed me-2"></i>Booking
+                    Details</h4>
                 <form id="bookingForm" method="POST">
                     {% csrf_token %}
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label">Customer Name</label>
-                            <input type="text" class="form-control readonly-field" value="{{ user.full_name }}" readonly>
+                            <input type="text" class="form-control readonly-field" value="{{ user.full_name }}"
+                                readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Contact Number</label>
@@ -86,7 +101,9 @@
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Delivery Destination</label>
-                            <textarea name="address" id="address" class="form-control" rows="2" placeholder="Enter complete delivery address" required>{{ user.address|default:"" }}</textarea>
+                            <textarea name="address" id="address" class="form-control" rows="2"
+                                placeholder="Enter complete delivery address"
+                                required>{{ user.address|default:"" }}</textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Booking Date</label>
@@ -105,21 +122,43 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Quantity</label>
-                            <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1" required>
+                            <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1"
+                                required>
                         </div>
 
                         <div class="col-md-12">
                             <label class="form-label">Advance Payment (₹)</label>
                             <div class="input-group input-group-lg">
                                 <span class="input-group-text bg-white border-end-0">₹</span>
-                                <input type="number" id="advancePaid" name="advance_paid" class="form-control border-start-0" value="2000" min="500" required>
+                                <input type="number" id="advancePaid" name="advance_paid"
+                                    class="form-control border-start-0" value="2000" min="500" required>
                             </div>
-                            <p class="small text-muted mt-2"><i class="fa-solid fa-circle-info me-1"></i> Minimum ₹500 required to secure booking.</p>
+                            <p class="small text-muted mt-2"><i class="fa-solid fa-circle-info me-1"></i> Minimum ₹500
+                                required to secure booking.</p>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Payment Option</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_type" id="payAdvance"
+                                        value="advance" checked>
+                                    <label class="form-check-label" for="payAdvance">Pay Advance</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_type" id="payFull"
+                                        value="full">
+                                    <label class="form-check-label" for="payFull">Pay Full Amount</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- base price needed client-side to compute full total; backend recalculates authoritatively anyway -->
+                        <input type="hidden" id="basePrice" value="{{ actual_model.price|default:0 }}">
                     </div>
 
                     <div class="mt-5 text-center">
-                        <button type="button" class="btn btn-primary btn-pay px-5 py-3 fw-bold rounded-pill text-uppercase ls-1" id="payBtn">
+                        <button type="button"
+                            class="btn btn-primary btn-pay px-5 py-3 fw-bold rounded-pill text-uppercase ls-1"
+                            id="payBtn">
                             <i class="fa-solid fa-lock me-2"></i> Confirm & Pay Advance
                         </button>
                         <!-- <button type="submit" class="d-none" id="realSubmitBtn"></button> -->
@@ -127,261 +166,76 @@
                 </form>
             </div>
         </div>
-
-        <!-- <div class="col-lg-4 animate-fade">
-            <div class="card order-summary-card p-4 shadow-lg border-0">
-                <div class="text-center mb-4">
-                    <i class="fa-solid fa-crown fs-1 mb-2" style="color: #D4AF37;"></i>
-                    <h5 class="fw-bold ls-2 text-uppercase mb-0">Order Summary</h5>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-3">
-                    <span class="opacity-75">Base Price:</span>
-                    <span id="labelBase" class="fw-bold">₹0</span>
-                </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span class="opacity-75">Quantity:</span>
-                    <span id="labelQty" class="fw-bold">01</span>
-                </div>
-                 <div class="d-flex justify-content-between mb-3 fw-bold border-top pt-3 mt-2">
-                    <span class="text-white">Gross Total:</span>
-                    <h4 id="labelTotal" class="mb-0 fw-bold" style="color: #D4AF37;">₹0</h4>
-                </div>
-                <div class="d-flex justify-content-between mb-4">
-                    <span class="opacity-75">Paid Advance:</span>
-                    <span id="labelAdvance" class="fw-bold text-warning">-₹0</span>
-                </div>
-                
-                <div class="bg-white bg-opacity-10 p-3 rounded-3 mb-4 text-center border border-white border-opacity-10">
-                    <span class="small d-block opacity-75 mb-1 text-uppercase ls-1">Balance Due</span>
-                    <h3 class="fw-bold mb-0" id="labelBalance" style="color: #D4AF37;">₹0</h3>
-                </div>
-
-                <p class="small opacity-75 text-center mt-2">
-                    <i class="fa-solid fa-truck-fast me-1"></i> Balance payable upon delivery.
-                </p>
-            </div>
-        </div> -->
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    // Initialize DOM elements
-    const modelSelect = document.getElementById('modelSelect');
     const qtyInput = document.getElementById('quantity');
     const advanceInput = document.getElementById('advancePaid');
     const payButton = document.getElementById('payBtn');
-
-    const labels = {
-        base: document.getElementById('labelBase'),
-        qty: document.getElementById('labelQty'),
-        total: document.getElementById('labelTotal'),
-        advance: document.getElementById('labelAdvance'),
-        balance: document.getElementById('labelBalance')
-    };
+    const basePriceInput = document.getElementById('basePrice');
+    const payAdvanceRadio = document.getElementById('payAdvance');
+    const payFullRadio = document.getElementById('payFull');
 
     let DISCOUNT_TIERS = [];
 
-    // --- NEW: Added showPaymentOverlay function ---
-    function showPaymentOverlay(advanceValue) {
-        const overlay = document.createElement('div');
-        overlay.id = "paymentOverlay";
-        overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);";
-        overlay.innerHTML = `
-    <style>
-        /* Razorpay Signature Blue Shimmer */
-        @keyframes rzp-shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        /* Smooth Pulse for the Icon */
-        @keyframes rzp-pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 149, 255, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(51, 149, 255, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 149, 255, 0); }
-        }
-
-        .rzp-logo-container {
-            width: 80px;
-            height: 80px;
-            background: #ffffff;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            border: 1px solid #f0f4f8;
-            animation: rzp-pulse 2s infinite;
-        }
-
-        .rzp-pay-button {
-            background: #3395FF;
-            background: linear-gradient(to right, #3395FF, #2d81db, #3395FF);
-            background-size: 200% 100%;
-            animation: rzp-shimmer 2s infinite linear;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            width: 100%;
-            transition: 0.3s;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .rzp-pay-button:hover {
-            filter: brightness(1.1);
-        }
-
-        .secure-badge {
-            display: inline-flex;
-            align-items: center;
-            background: #e7f3ff;
-            color: #3395FF;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-    </style>
-
-    <div style="background:white; padding:35px; border-radius:16px; text-align:center; width:90%; max-width:380px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-top: 5px solid #3395FF;">
-        
-        <div class="secure-badge">
-            <i class="fa-solid fa-shield-halved me-1"></i> Secured by Razorpay
-        </div>
-
-        <div class="rzp-logo-container">
-            <img src="https://razorpay.com/favicon.png" width="40" style="filter: contrast(1.1);">
-        </div>
-        
-        <h4 class="fw-bold" style="color: #233448; font-family: 'Inter', sans-serif;">Complete Payment</h4>
-        <p style="color: #51667a; font-size: 0.9rem; margin-bottom: 25px;">
-            Amount to be paid securely:<br>
-            <span style="font-size: 1.6rem; color: #233448; font-weight: 800;">₹${advanceValue.toLocaleString('en-IN')}</span>
-        </p>
-
-        <div id="status-container">
-            <button class="rzp-pay-button" id="confirmPay">
-                PAY NOW <i class="fa-solid fa-arrow-right ms-2"></i>
-            </button>
-            <button class="btn btn-link btn-sm mt-3 text-muted text-decoration-none" 
-                    onclick="document.getElementById('paymentOverlay').remove()">
-                Cancel
-            </button>
-        </div>
-        
-        <div class="mt-4 pt-3 border-top d-flex justify-content-center align-items-center opacity-75">
-            <span style="font-size: 11px; color: #51667a;">
-                Card • UPI • Netbanking • Wallet
-            </span>
-        </div>
-    </div>`;
-        document.body.appendChild(overlay);
-
-        document.getElementById('confirmPay').onclick = function() {
-            const container = document.getElementById('status-container');
-            container.innerHTML = '<div class="spinner-border text-primary my-2"></div><p>Processing Payment...</p>';
-            
-            // Simulating payment processing
-            setTimeout(() => {
-                container.innerHTML = '<i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i><h5 class="text-success">Payment Successful!</h5>';
-                setTimeout(() => {
-                    updateDatabase(); // Final step to save booking
-                }, 1200);
-            }, 2000);
-        };
-    }
-
     function init() {
-        let models = [];
         try {
-            models = JSON.parse('{{ products_list|safe|escapejs }}');
             DISCOUNT_TIERS = JSON.parse('{{ discounts_json|safe|escapejs }}');
         } catch (e) {
             console.error("Data load error:", e);
         }
-        
-        // Populate dropdown if it exists
-        if (modelSelect.tagName === 'SELECT') {
-            modelSelect.innerHTML = '';
-            const urlParams = new URLSearchParams(window.location.search);
-            const selectedId = urlParams.get('id');
-
-            models.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.id;
-                opt.text = `${m.name} (₹${m.price})`;
-                opt.dataset.price = m.price;
-                if(String(m.id) === String(selectedId)) opt.selected = true;
-                modelSelect.appendChild(opt);
-            });
-        }
-
-        calculate();
+        applyPaymentMode();
     }
 
-    function calculate() {
-        let basePrice = 0;
-        if (modelSelect.tagName === 'SELECT') {
-            const selectedOpt = modelSelect.options[modelSelect.selectedIndex];
-            if (selectedOpt) basePrice = parseInt(selectedOpt.dataset.price) || 0;
-        } else {
-            // If modelSelect is a hidden input, we'd need to find the price from models array
-            // Assuming current logic uses the select for now.
-        }
-
+    function calcGrandTotal() {
+        const basePrice = parseFloat(basePriceInput.value) || 0;
         const qty = parseInt(qtyInput.value) || 1;
-        const advance = parseInt(advanceInput.value) || 0;
-        let subtotal = basePrice * qty;
-        
+        const subtotal = basePrice * qty;
+
         let discountPercent = 0;
         const tier = DISCOUNT_TIERS.find(t => subtotal >= t.min_price && (t.max_price === null || subtotal <= t.max_price));
         if (tier) discountPercent = tier.discount_percent;
 
         const discountAmt = (subtotal * discountPercent) / 100;
-        const grossTotal = subtotal - discountAmt;
-        const remainingBalance = grossTotal - advance;
+        return subtotal - discountAmt;
+    }
 
-        if (labels.base) labels.base.innerText = `₹${basePrice.toLocaleString('en-IN')}`;
-        if (labels.qty) labels.qty.innerText = qty.toString().padStart(2, '0');
-        if (labels.total) labels.total.innerText = `₹${grossTotal.toLocaleString('en-IN')}`;
-        if (labels.advance) labels.advance.innerText = `-₹${advance.toLocaleString('en-IN')}`;
-        if (labels.balance) labels.balance.innerText = `₹${Math.max(0, remainingBalance).toLocaleString('en-IN')}`;
+    // When "Pay Full" is selected, lock the advance field to the grand total
+    function applyPaymentMode() {
+        if (payFullRadio.checked) {
+            advanceInput.value = Math.round(calcGrandTotal());
+            advanceInput.readOnly = true;
+        } else {
+            advanceInput.readOnly = false;
+            if (parseInt(advanceInput.value) < 500 || payFullRadio.dataset.wasChecked === 'true') {
+                advanceInput.value = 2000; // reset to default advance
+            }
+        }
+        payFullRadio.dataset.wasChecked = payFullRadio.checked;
     }
 
     if (payButton) {
-        payButton.addEventListener('click', function(e) {
+        payButton.addEventListener('click', function (e) {
             e.preventDefault();
-            const advanceValue = parseInt(advanceInput.value) || 0;
-            const addressField = document.getElementById('address');
-            const address = addressField ? addressField.value.trim() : "";
+            const address = document.getElementById('address').value.trim();
             const delivery_date = document.getElementById('deliveryDate').value;
-            if (!delivery_date) {
-                showNotification("Please enter a delivery date.", "danger");
-                return;
-            }
-            if (!address) {
-                showNotification("Please enter a delivery address.", "danger");
-                return;
-            }
-            
-            runValidation(); 
+
+            if (!delivery_date) { showNotification("Please enter a delivery date.", "danger"); return; }
+            if (!address) { showNotification("Please enter a delivery address.", "danger"); return; }
+
+            runValidation();
         });
     }
 
     function runValidation() {
         const urlParams = new URLSearchParams(window.location.search);
         const productIdFromUrl = urlParams.get('id');
-        const url = '{% url "customer:booking_validation" %}';
-        
-        // Visual feedback
+        const url = '{% url "wholesaler:booking_validation" %}';
+
         payButton.disabled = true;
         payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Validating...';
 
@@ -392,62 +246,112 @@
 
         fetch(url, {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            payButton.disabled = false;
-            payButton.innerHTML = '<i class="fa-solid fa-lock me-2"></i> Confirm & Pay Advance';
-
-            if (data.status === 'success') {
-                showPaymentOverlay(parseInt(advanceInput.value));
-            } else {
-                showNotification(data.message, "danger");
-            }
-        })
-        .catch(error => {
-            payButton.disabled = false;
-            payButton.innerHTML = '<i class="fa-solid fa-lock me-2"></i> Confirm & Pay Advance';
-            showNotification("Technical error: " + error.message, "danger");
-        });
+            .then(res => res.json())
+            .then(data => {
+                resetPayButton();
+                if (data.status === 'success') {
+                    createOrderAndPay();
+                } else {
+                    showNotification(data.message, "danger");
+                }
+            })
+            .catch(err => {
+                resetPayButton();
+                showNotification("Technical error: " + err.message, "danger");
+            });
     }
 
-    function updateDatabase() {
+    function resetPayButton() {
+        payButton.disabled = false;
+        payButton.innerHTML = '<i class="fa-solid fa-lock me-2"></i> Confirm & Pay';
+    }
+
+    // Step 1: create Order + Payment + Razorpay order on the backend
+    function createOrderAndPay() {
         const url = '{% url "wholesaler:book" %}';
         const formData = new FormData(document.getElementById('bookingForm'));
 
         fetch(url, {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                showNotification(data.message, 'success');
-                setTimeout(() => { window.location.href = data.redirect_url; }, 2000);
-            } else {
-                showNotification(data.message, 'danger');
-                const overlay = document.getElementById('paymentOverlay');
-                if(overlay) overlay.remove();
-            }
-        })
-        .catch(error => {
-            showNotification("Server error. Please try again.", 'danger');
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    openRazorpayCheckout(data);
+                } else {
+                    showNotification(data.message, 'danger');
+                }
+            })
+            .catch(() => showNotification("Server error. Please try again.", 'danger'));
+    }
+
+    // Step 2: real Razorpay Checkout modal
+    function openRazorpayCheckout(data) {
+        const options = {
+            key: data.key_id,
+            amount: data.amount,
+            currency: data.currency,
+            name: "Murtikart",
+            description: "Ganpati Bappa Booking",
+            order_id: data.razorpay_order_id,
+            handler: function (response) {
+                verifyPayment(response, data.order_id);
+            },
+            modal: {
+                ondismiss: function () {
+                    showNotification("Payment cancelled.", "danger");
+                }
+            },
+            prefill: {
+                name: data.name,
+                email: data.email,
+                contact: data.contact
+            },
+            theme: { color: "#600000" }
+        };
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function () {
+            showNotification("Payment failed. Please try again.", "danger");
         });
+        rzp.open();
+    }
+
+    // Step 3: verify signature server-side, then redirect
+    function verifyPayment(response, orderId) {
+        fetch('{% url "wholesaler:verify_payment" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                order_id: orderId
+            })
+        })
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    showNotification("Payment successful! Redirecting...", 'success');
+                    setTimeout(() => { window.location.href = result.redirect_url; }, 1500);
+                } else {
+                    showNotification(result.message, 'danger');
+                }
+            })
+            .catch(() => showNotification("Verification failed. Contact support if amount was deducted.", 'danger'));
     }
 
     function showNotification(message, type) {
         const alertPlaceholder = document.createElement('div');
         alertPlaceholder.innerHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show shadow" role="alert" 
+            <div class="alert alert-${type} alert-dismissible fade show shadow" role="alert"
                 style="position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 300px;">
                 <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
                 ${message}
@@ -455,14 +359,14 @@
             </div>`;
         document.body.append(alertPlaceholder);
         setTimeout(() => {
-            const element = alertPlaceholder.firstElementChild;
-            if (element) { new bootstrap.Alert(element).close(); }
+            const el = alertPlaceholder.firstElementChild;
+            if (el) new bootstrap.Alert(el).close();
         }, 4000);
     }
 
     document.addEventListener('DOMContentLoaded', init);
-    modelSelect.addEventListener('change', calculate);
-    qtyInput.addEventListener('input', calculate);
-    advanceInput.addEventListener('input', calculate);
+    qtyInput.addEventListener('input', applyPaymentMode);
+    payAdvanceRadio.addEventListener('change', applyPaymentMode);
+    payFullRadio.addEventListener('change', applyPaymentMode);
 </script>
 {% endblock %}

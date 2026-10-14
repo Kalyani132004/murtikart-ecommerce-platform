@@ -1,0 +1,351 @@
+/* 
+   SECTION 1: CSS VARIABLES (Theme Colors)
+   These variables act like 'nicknames' for colors, making it easy to change 
+   the whole theme from one place.
+*/
+:root {
+    --primary-royal: #600000;      /* Deep Maroon - Festive/Traditional */
+    --primary-glow: #a41b1b;       /* Lighter Maroon for hover effects */
+    --metallic-gold: #D4AF37;      /* Classic Gold color */
+    --gold-glow: #FFD700;          /* Bright gold for shining effects */
+    --silk-cream: #FFFDF5;         /* Soft background color */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-dark: #2c0e0e;
+    --text-muted: #6c757d;
+    --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-gold {
+    background: linear-gradient(135deg, var(--metallic-gold), var(--gold-glow)) !important;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--silk-cream);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+.festive-font {
+    font-family: 'Playfair Display', serif;
+    color: var(--primary-royal);
+    font-weight: 700;
+}
+
+/* Glassmorphism Utilities */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-premium);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px var(--metallic-gold);
+    }
+
+    50% {
+        box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    100% {
+        box-shadow: 0 0 5px var(--metallic-gold);
+    }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* 3D Floating Hero Animation */
+@keyframes floatGanesha {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(2deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* Playful Mouse (Undir) Movement */
+@keyframes undirMove {
+    0% { transform: translateX(0) scaleX(1); }
+    45% { transform: translateX(10px) scaleX(1); }
+    50% { transform: translateX(10px) scaleX(-1); }
+    95% { transform: translateX(0) scaleX(-1); }
+    100% { transform: translateX(0) scaleX(1); }
+}
+
+.animate-up { animation: fadeInUp 0.8s ease-out forwards; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-ganesha { animation: floatGanesha 6s ease-in-out infinite; }
+.animate-undir { animation: undirMove 4s ease-in-out infinite; }
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-royal), var(--primary-glow));
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 15px rgba(96, 0, 0, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(96, 0, 0, 0.4);
+    background: linear-gradient(135deg, var(--primary-glow), var(--primary-royal));
+    color: white;
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, var(--metallic-gold), var(--gold-glow));
+    border: none;
+    color: #2c0e0e;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    transition: var(--transition-smooth);
+}
+
+.btn-gold:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* Navbar Global */
+.navbar {
+    background: rgba(255, 253, 245, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 15px 0;
+    transition: var(--transition-smooth);
+}
+
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-royal) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.navbar .nav-link {
+    color: var(--text-dark) !important;
+    font-weight: 500;
+    margin: 0 10px;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.navbar .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--metallic-gold);
+    transition: var(--transition-smooth);
+}
+
+.navbar .nav-link:hover::after {
+    width: 100%;
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-royal) !important;
+}
+
+/* Custom Card Skins */
+.festive-card {
+    border: none;
+    border-radius: 20px;
+    background: white;
+    transition: var(--transition-smooth);
+    overflow: hidden;
+    box-shadow: var(--shadow-premium);
+}
+
+.festive-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(96, 0, 0, 0.1);
+}
+
+/* Language Switcher */
+.lang-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 5px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lang-btn {
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.lang-btn.active {
+    background: var(--metallic-gold);
+    color: #2c0e0e;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+}
+
+.lang-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Premium Enhancements */
+.premium-card {
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+}
+
+.premium-badge {
+    background: linear-gradient(135deg, var(--metallic-gold), var(--gold-glow));
+    color: #2c0e0e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+}
+
+/* 
+   SECTION: BRANDING & LOGO 
+   Handles how the identity of MurtiKart appears in the Sidebar
+*/
+.sidebar-logo img {
+    max-height: 80px;
+    width: auto;
+    /* Subtle shadow to lift the logo */
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
+    /* CLEVER TRICK: 'screen' removes the black background from the logo asset */
+    mix-blend-mode: screen; 
+    transition: var(--transition-smooth);
+}
+
+.brand-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: var(--primary-royal);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.4rem;
+    margin-top: 10px;
+}
+
+/* 
+   SECTION: PREMIUM LOGIN REDESIGN 
+   Special styles for the high-end 3D login experience
+*/
+.login-split-container {
+    display: flex;
+    min-height: 85vh;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    margin: 20px auto;
+    max-width: 1100px;
+}
+
+.login-hero-side {
+    flex: 1;
+    background: radial-gradient(circle at center, #600000, #2c0e0e);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+}
+
+.login-form-side {
+    flex: 1;
+    padding: 60px;
+    background: #1a0505;
+    position: relative;
+}
+
+.hero-illustration {
+    width: 90%;
+    max-width: 400px;
+    filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5));
+}
+
+.undir-icon {
+    position: absolute;
+    bottom: 40px;
+    right: 60px;
+    width: 60px;
+    opacity: 0.8;
+}
+
+/* Responsive adjustements */
+@media (max-width: 991px) {
+    .login-split-container {
+        flex-direction: column;
+        margin: 10px;
+    }
+    .login-hero-side {
+        padding: 30px;
+        min-height: 300px;
+    }
+    .login-form-side {
+        padding: 30px;
+    }
+}
+
+.logo-container {
+    padding: 20px 0;
+    border-bottom: 2px dashed rgba(212, 175, 55, 0.2);
+    margin-bottom: 20px;
+}

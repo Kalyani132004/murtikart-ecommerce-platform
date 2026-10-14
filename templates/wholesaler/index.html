@@ -94,11 +94,15 @@
                         <td class="fw-bold">₹{{ order.total_amount }}</td>
                         <td>
                             {% if order.status == 'pending' %}
-                                <span class="badge bg-info rounded-pill px-3">Pending</span>
-                            {% elif order.status == 'completed' %}
-                                <span class="badge bg-success rounded-pill px-3">Delivered</span>
+                            <span class="badge bg-info rounded-pill px-3">Pending</span>
+                            {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success rounded-pill px-3">Delivered</span>
+                            {% elif order.status == 'confirmed' %}
+                            <span class="badge bg-primary rounded-pill px-3">Confirmed</span>
+                            {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger rounded-pill px-3">Cancelled</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark rounded-pill px-3">{{ order.status|title }}</span>
+                            <span class="badge bg-warning text-dark rounded-pill px-3">{{ order.status|title }}</span>
                             {% endif %}
                         </td>
                     </tr>

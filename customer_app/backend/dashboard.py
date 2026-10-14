@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from admin_app.models import Product, Order
 from django.db.models import Sum, F
+from murtikart_project.decorators import role_required
 
+@role_required('customer')
 @login_required
 def dashboard(request):
     print('customer role section: ',request.user.role)
